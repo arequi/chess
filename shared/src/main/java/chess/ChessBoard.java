@@ -15,7 +15,6 @@ public class ChessBoard {
     private ChessPosition position;
 
     public ChessBoard() {
-        
     }
 
     @Override
@@ -75,19 +74,16 @@ public class ChessBoard {
         posArray[0][5] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP);
         posArray[0][6] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT);
         posArray[0][7] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK);
-
         // row 1 gets white pawns
         for (int i= 0; i < 8; i++) {
             posArray[1][i] = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
         }
-
         // everything in between has nothing
         for (int i = 2; i < 6; i++) {
             for (int j = 0; j < 8; j++) {
                 posArray[i][j] = null;
             }
         }
-
         // row 6 gets black pawns
         for (int i= 0; i < 8; i++) {
             posArray[6][i] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN);
@@ -101,6 +97,5 @@ public class ChessBoard {
         posArray[7][5] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP);
         posArray[7][6] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT);
         posArray[7][7] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
-
     }
 }
