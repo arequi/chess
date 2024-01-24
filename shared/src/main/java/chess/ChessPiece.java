@@ -398,8 +398,6 @@ public class ChessPiece {
                 move = new ChessMove(myPosition, downRight, null);
                 queenMovesCollection.add(move);
                 break;
-
-
             }
             else {
                 break;
@@ -487,6 +485,85 @@ public class ChessPiece {
     }
     public Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition) {
         knightMovesCollection = new HashSet<>();
+        ChessPosition upLeft = new ChessPosition(myPosition.getRow()+2, myPosition.getColumn()-1);
+        ChessPosition upRight = new ChessPosition(myPosition.getRow()+2, myPosition.getColumn()+1);
+        ChessPosition leftUp = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn()-2);
+        ChessPosition rightUp = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn()+2);
+        ChessPosition downLeft = new ChessPosition(myPosition.getRow()-2, myPosition.getColumn()-1);
+        ChessPosition downRight = new ChessPosition(myPosition.getRow()-2, myPosition.getColumn()+1);
+        ChessPosition leftDown = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()-2);
+        ChessPosition rightDown = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn()+2);
+
+        //ups 2
+        if (myPosition.getRow() < 7) {
+            //upLeft
+            if (myPosition.getColumn() != 1) {
+                if (board.getPiece(upLeft) == null || !isSameColor(board, myPosition, upLeft)) {
+                    move = new ChessMove(myPosition, upLeft, null);
+                    knightMovesCollection.add(move);
+                }
+            }
+            //upRight
+            if (myPosition.getColumn() != 8) {
+                if (board.getPiece(upRight) == null || !isSameColor(board, myPosition, upRight)) {
+                    move = new ChessMove(myPosition, upRight, null);
+                    knightMovesCollection.add(move);
+                }
+            }
+        }
+        //ups 1
+        if (myPosition.getRow()!= 8) {
+            //leftUp
+            if (myPosition.getColumn() > 2) {
+                if (board.getPiece(leftUp) == null || !isSameColor(board, myPosition, leftUp)) {
+                    move = new ChessMove(myPosition, leftUp, null);
+                    knightMovesCollection.add(move);
+                }
+            }
+            //rightUp
+            if (myPosition.getColumn() < 7) {
+                if (board.getPiece(rightUp) == null || !isSameColor(board, myPosition, rightUp)) {
+                    move = new ChessMove(myPosition, rightUp, null);
+                    knightMovesCollection.add(move);
+                }
+            }
+
+        }
+        // downs 2
+        if (myPosition.getRow() > 2) {
+            //downLeft
+            if (myPosition.getColumn() != 1) {
+                if (board.getPiece(downLeft) == null || !isSameColor(board, myPosition, downLeft)) {
+                    move = new ChessMove(myPosition, downLeft, null);
+                    knightMovesCollection.add(move);
+                }
+            }
+            //downRight
+            if (myPosition.getColumn() != 8) {
+                if (board.getPiece(downRight) == null || !isSameColor(board, myPosition, downRight)) {
+                    move = new ChessMove(myPosition, downRight, null);
+                    knightMovesCollection.add(move);
+                }
+            }
+        }
+        // downs 1
+        if (myPosition.getRow() != 1) {
+            //leftDown
+            if (myPosition.getColumn() > 2) {
+                if (board.getPiece(leftDown) == null || !isSameColor(board, myPosition, leftDown)) {
+                    move = new ChessMove(myPosition, leftDown, null);
+                    knightMovesCollection.add(move);
+                }
+            }
+            //rightDown
+            if (myPosition.getColumn() < 7) {
+                if (board.getPiece(rightDown) == null || !isSameColor(board, myPosition, rightDown)) {
+                    move = new ChessMove(myPosition, rightDown, null);
+                    knightMovesCollection.add(move);
+                }
+            }
+        }
+
         return knightMovesCollection;
     }
     public Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition) {
