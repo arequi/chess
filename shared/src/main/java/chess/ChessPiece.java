@@ -1,9 +1,6 @@
 package chess;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Represents a single chess piece
@@ -17,9 +14,12 @@ public class ChessPiece {
     private ChessPiece.PieceType type;
     Collection<ChessMove> pawnMovesCollection;
     Collection<ChessMove> bishopMovesCollection;
+    Collection<ChessMove> queenMovesCollection;
+    Collection<ChessMove> kingMovesCollection;
+    Collection<ChessMove> rookMovesCollection;
+    Collection<ChessMove> knightMovesCollection;
     ChessMove move;
     ChessPiece.PieceType promotionPiece;
-    String promotionPieceString;
     ChessPosition newPosition;
     ChessPosition currentPosition;
 
@@ -68,43 +68,33 @@ public class ChessPiece {
     }
 
     // get moves for all promotion pieces, not just one
-    public PieceType getPromotionPiece(ChessPosition position, ChessGame.TeamColor color) {
+    public boolean needsPromotionPiece(ChessPosition position, ChessGame.TeamColor color) {
         // for white
-        if (color == ChessGame.TeamColor.WHITE) {
-            if (position.getRow() == 7) {
-//                Scanner s = new Scanner(System.in);
-//                System.out.println("Enter a promotion piece from the choice formats ROOK, KNIGHT, BISHOP, or QUEEN:");
-//                promotionPieceString = s.nextLine();
-//                promotionPiece = stringToPiece(promotionPieceString);
-                promotionPiece = PieceType.QUEEN;
-            }
+        if (color == ChessGame.TeamColor.WHITE && position.getRow() == 7) {
+            return true;
         }
         // for black
-        else {
-            if (position.getRow() == 2) {
-//                Scanner s = new Scanner(System.in);
-//                System.out.println("Enter a promotion piece from the choice formats ROOK, KNIGHT, BISHOP, or QUEEN:");
-//                promotionPieceString = s.nextLine();
-//                promotionPiece = stringToPiece(promotionPieceString);
-                promotionPiece = PieceType.QUEEN;
-            }
+        else if (color == ChessGame.TeamColor.BLACK && position.getRow() == 2) {
+            return true;
         }
-        return promotionPiece;
+        else {
+            return false;
+        }
     }
 
-    public ChessPiece.PieceType stringToPiece(String string) {
-        switch (string) {
-            case "ROOK":
-                return PieceType.ROOK;
-            case "KNIGHT":
-                return PieceType.KNIGHT;
-            case "BISHOP":
-                return PieceType.BISHOP;
-            case "QUEEN":
-                return PieceType.QUEEN;
-            default:
-                return null;
-        }
+    public void addPromotionPieces(ChessPosition position, ChessGame.TeamColor color, ChessPosition direction) {
+        promotionPiece = PieceType.KNIGHT;
+        move = new ChessMove(position, direction, promotionPiece);
+        pawnMovesCollection.add(move);
+        promotionPiece = PieceType.BISHOP;
+        move = new ChessMove(position, direction, promotionPiece);
+        pawnMovesCollection.add(move);
+        promotionPiece = PieceType.ROOK;
+        move = new ChessMove(position, direction, promotionPiece);
+        pawnMovesCollection.add(move);
+        promotionPiece = PieceType.QUEEN;
+        move = new ChessMove(position, direction, promotionPiece);
+        pawnMovesCollection.add(move);
     }
 
     public boolean isPawnBlocked(ChessBoard board, ChessPosition position, ChessGame.TeamColor color) {
@@ -130,7 +120,6 @@ public class ChessPiece {
             }
         }
     }
-    // TODO: check for invalid user input
     public void captureEnemyDiag(ChessBoard board, ChessPosition position, ChessGame.TeamColor color) {
         ChessPosition leftUp = new ChessPosition(position.getRow()+1, position.getColumn()-1);
         ChessPosition rightUp = new ChessPosition(position.getRow() + 1, position.getColumn() + 1);
@@ -141,27 +130,26 @@ public class ChessPiece {
             if (board.getPiece(leftUp) != null) {
                 if (board.getPiece(leftUp).getTeamColor() == ChessGame.TeamColor.BLACK) {
                     // check if pawn will land on last row
-                    if (getPromotionPiece(position, color) != null) {
-                        promotionPiece = getPromotionPiece(position, color);
-                        move = new ChessMove(position, leftUp, promotionPiece);
+                    if (needsPromotionPiece(position, color)) {
+                        addPromotionPieces(position, color, leftUp);
                     }
                     else {
                         move = new ChessMove(position, leftUp, null);
+                        pawnMovesCollection.add(move);
                     }
-                    pawnMovesCollection.add(move);
+
                 }
             }
                 // right diag position
             if (board.getPiece(rightUp) != null) {
                 if (board.getPiece(rightUp).getTeamColor() == ChessGame.TeamColor.BLACK) {
-                    if (getPromotionPiece(position, color) != null) {
-                        promotionPiece = getPromotionPiece(position, color);
-                        move = new ChessMove(position, rightUp, promotionPiece);
+                    if (needsPromotionPiece(position, color)) {
+                        addPromotionPieces(position, color, rightUp);
                     }
                     else {
                         move = new ChessMove(position, rightUp, null);
+                        pawnMovesCollection.add(move);
                     }
-                    pawnMovesCollection.add(move);
                 }
             }
         }
@@ -171,41 +159,40 @@ public class ChessPiece {
             if (board.getPiece(leftDown) != null) {
                 if (board.getPiece(leftDown).getTeamColor() == ChessGame.TeamColor.WHITE) {
                     //check if pawn will land on last row (needs promotionPiece)
-                    if (getPromotionPiece(position, color) != null) {
-                        promotionPiece = getPromotionPiece(position, color);
-                        move = new ChessMove(position, leftDown, promotionPiece);
+                    if (needsPromotionPiece(position, color)) {
+                        addPromotionPieces(position, color, leftDown);
                     }
                     else {
                         move = new ChessMove(position, leftDown, null);
+                        pawnMovesCollection.add(move);
                     }
-                    pawnMovesCollection.add(move);
                 }
             }
             // right diag position
             if (board.getPiece(rightDown) != null) {
                 if (board.getPiece(rightDown).getTeamColor() == ChessGame.TeamColor.WHITE) {
-                    if (getPromotionPiece(position, color) != null) {
-                        promotionPiece = getPromotionPiece(position, color);
-                        move = new ChessMove(position, rightDown, promotionPiece);
+                    if (needsPromotionPiece(position, color)) {
+                        addPromotionPieces(position, color, rightDown);
                     }
                     else {
                         move = new ChessMove(position, rightDown, null);
+                        pawnMovesCollection.add(move);
                     }
-                    pawnMovesCollection.add(move);
                 }
             }
-
         }
     }
 
     public Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
+        kingMovesCollection = new HashSet<>();
         return null;
     }
     public Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition myPosition) {
+        queenMovesCollection = new HashSet<>();
         return null;
     }
     public Collection<ChessMove> bishopMoves(ChessBoard board, ChessPosition myPosition) {
-        bishopMovesCollection = new ArrayList<>();
+        bishopMovesCollection = new HashSet<>();
 
         currentPosition = myPosition;
         // upLeft movement
@@ -243,8 +230,6 @@ public class ChessPiece {
                 break;
             }
         }
-
-
         // down left movement
         currentPosition = myPosition;
         while (currentPosition.getRow() != 1 && currentPosition.getColumn() != 1) {
@@ -281,17 +266,18 @@ public class ChessPiece {
                 break;
             }
         }
-
         return bishopMovesCollection;
     }
     public Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition) {
+        knightMovesCollection = new HashSet<>();
         return null;
     }
     public Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition) {
+        rookMovesCollection = new HashSet<>();
         return null;
     }
     public Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
-        pawnMovesCollection = new ArrayList<>();
+        pawnMovesCollection = new HashSet<>();
 
         // white pawn types
         if (board.getPiece(myPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
@@ -314,19 +300,17 @@ public class ChessPiece {
             else {
                 if (!isPawnBlocked(board, myPosition, ChessGame.TeamColor.WHITE)) {
                     newPosition = new ChessPosition(myPosition.getRow()+1, myPosition.getColumn());
-                    if (getPromotionPiece(myPosition, ChessGame.TeamColor.WHITE) != null) {
-                        promotionPiece = getPromotionPiece(myPosition, ChessGame.TeamColor.WHITE);
-                        move = new ChessMove(myPosition, newPosition, promotionPiece);
+                    if (needsPromotionPiece(myPosition, ChessGame.TeamColor.WHITE)) {
+                        addPromotionPieces(myPosition, ChessGame.TeamColor.WHITE, newPosition);
                     }
                     else {
                         move = new ChessMove(myPosition, newPosition, null);
+                        pawnMovesCollection.add(move);
                     }
-                    pawnMovesCollection.add(move);
                 }
             }
             // check if any white pieces are diagonal (vulnerable to take) (decrement row by 1 & increment AND decrement column by 1)
             captureEnemyDiag(board, myPosition, ChessGame.TeamColor.WHITE);
-
         }
         // black pawn types
         else if (board.getPiece(myPosition).getTeamColor() == ChessGame.TeamColor.BLACK) {
@@ -347,14 +331,13 @@ public class ChessPiece {
             else {
                 if (!isPawnBlocked(board, myPosition, ChessGame.TeamColor.BLACK)) {
                     newPosition = new ChessPosition(myPosition.getRow()-1, myPosition.getColumn());
-                    if (getPromotionPiece(myPosition, ChessGame.TeamColor.BLACK) != null) {
-                        promotionPiece = getPromotionPiece(myPosition, ChessGame.TeamColor.BLACK);
-                        move = new ChessMove(myPosition, newPosition, promotionPiece);
+                    if (needsPromotionPiece(myPosition, ChessGame.TeamColor.BLACK)) {
+                        addPromotionPieces(myPosition, ChessGame.TeamColor.BLACK, newPosition);
                     }
                     else {
                         move = new ChessMove(myPosition, newPosition, null);
+                        pawnMovesCollection.add(move);
                     }
-                    pawnMovesCollection.add(move);
                 }
             }
             // check if any black pieces are diagonal (vulnerable to take) (increment row by 1 & increment OR decrement column by 1 (first check to stay in bounds of chess board ()
