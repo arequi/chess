@@ -11,7 +11,7 @@ import java.util.Objects;
  */
 public class ChessBoard {
 
-    private ChessPiece[][] posArray = new ChessPiece[8][8];
+    private ChessPiece[][] posArray = new ChessPiece[9][9];
     private ChessPosition position;
 
     public ChessBoard() {

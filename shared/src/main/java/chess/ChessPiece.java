@@ -16,12 +16,16 @@ public class ChessPiece {
     private ChessGame.TeamColor pieceColor;
     private ChessPiece.PieceType type;
     Collection<ChessMove> pawnMovesCollection;
+    Collection<ChessMove> bishopMovesCollection;
     ChessMove move;
     ChessPiece.PieceType promotionPiece;
     String promotionPieceString;
     ChessPosition newPosition;
+    ChessPosition currentPosition;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+        this.pieceColor = pieceColor;
+        this.type = type;
     }
 
     @Override
@@ -63,27 +67,28 @@ public class ChessPiece {
         return type;
     }
 
+    // get moves for all promotion pieces, not just one
     public PieceType getPromotionPiece(ChessPosition position, ChessGame.TeamColor color) {
         // for white
         if (color == ChessGame.TeamColor.WHITE) {
             if (position.getRow() == 7) {
-                Scanner s = new Scanner(System.in);
-                System.out.println("Enter a promotion piece from the choice formats ROOK, KNIGHT, BISHOP, or QUEEN:");
-                promotionPieceString = s.nextLine();
-                promotionPiece = stringToPiece(promotionPieceString);
+//                Scanner s = new Scanner(System.in);
+//                System.out.println("Enter a promotion piece from the choice formats ROOK, KNIGHT, BISHOP, or QUEEN:");
+//                promotionPieceString = s.nextLine();
+//                promotionPiece = stringToPiece(promotionPieceString);
+                promotionPiece = PieceType.QUEEN;
             }
         }
         // for black
         else {
             if (position.getRow() == 2) {
-                Scanner s = new Scanner(System.in);
-                System.out.println("Enter a promotion piece from the choice formats ROOK, KNIGHT, BISHOP, or QUEEN:");
-                promotionPieceString = s.nextLine();
-                promotionPiece = stringToPiece(promotionPieceString);
+//                Scanner s = new Scanner(System.in);
+//                System.out.println("Enter a promotion piece from the choice formats ROOK, KNIGHT, BISHOP, or QUEEN:");
+//                promotionPieceString = s.nextLine();
+//                promotionPiece = stringToPiece(promotionPieceString);
+                promotionPiece = PieceType.QUEEN;
             }
-
         }
-
         return promotionPiece;
     }
 
@@ -200,7 +205,84 @@ public class ChessPiece {
         return null;
     }
     public Collection<ChessMove> bishopMoves(ChessBoard board, ChessPosition myPosition) {
-        return null;
+        bishopMovesCollection = new ArrayList<>();
+
+        currentPosition = myPosition;
+        // upLeft movement
+        while (currentPosition.getRow() != 8 && currentPosition.getColumn() != 1) {
+            ChessPosition upLeft = new ChessPosition(currentPosition.getRow()+1, currentPosition.getColumn()-1);
+            if (board.getPiece(upLeft) == null) {
+                move = new ChessMove(myPosition, upLeft, null);
+                bishopMovesCollection.add(move);
+                currentPosition = upLeft;
+            }
+            else if (board.getPiece(myPosition).getTeamColor() == board.getPiece(upLeft).getTeamColor()) {
+                break;
+            }
+            else {
+                move = new ChessMove(myPosition, upLeft, null);
+                bishopMovesCollection.add(move);
+                break;
+            }
+        }
+        // up right movement
+        currentPosition = myPosition;
+        while (currentPosition.getRow() != 8 && currentPosition.getColumn() != 8) {
+            ChessPosition upRight = new ChessPosition(currentPosition.getRow()+1, currentPosition.getColumn()+1);
+            if (board.getPiece(upRight) == null) {
+                move = new ChessMove(myPosition, upRight, null);
+                bishopMovesCollection.add(move);
+                currentPosition = upRight;
+            }
+            else if (board.getPiece(myPosition).getTeamColor() == board.getPiece(upRight).getTeamColor()) {
+                break;
+            }
+            else {
+                move = new ChessMove(myPosition, upRight, null);
+                bishopMovesCollection.add(move);
+                break;
+            }
+        }
+
+
+        // down left movement
+        currentPosition = myPosition;
+        while (currentPosition.getRow() != 1 && currentPosition.getColumn() != 1) {
+            ChessPosition downLeft = new ChessPosition(currentPosition.getRow()-1, currentPosition.getColumn()-1);
+            if (board.getPiece(downLeft) == null) {
+                move = new ChessMove(myPosition, downLeft, null);
+                bishopMovesCollection.add(move);
+                currentPosition = downLeft;
+            }
+            else if (board.getPiece(myPosition).getTeamColor() == board.getPiece(downLeft).getTeamColor()) {
+                break;
+            }
+            else {
+                move = new ChessMove(myPosition, downLeft, null);
+                bishopMovesCollection.add(move);
+                break;
+            }
+        }
+        // down right movement
+        currentPosition = myPosition;
+        while (currentPosition.getRow() != 1 && currentPosition.getColumn() != 1) {
+            ChessPosition downRight = new ChessPosition(currentPosition.getRow()-1, currentPosition.getColumn()+1);
+            if (board.getPiece(downRight) == null) {
+                move = new ChessMove(myPosition, downRight, null);
+                bishopMovesCollection.add(move);
+                currentPosition = downRight;
+            }
+            else if (board.getPiece(myPosition).getTeamColor() == board.getPiece(downRight).getTeamColor()) {
+                break;
+            }
+            else {
+                move = new ChessMove(myPosition, downRight, null);
+                bishopMovesCollection.add(move);
+                break;
+            }
+        }
+
+        return bishopMovesCollection;
     }
     public Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition) {
         return null;
@@ -210,7 +292,6 @@ public class ChessPiece {
     }
     public Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
         pawnMovesCollection = new ArrayList<>();
-
 
         // white pawn types
         if (board.getPiece(myPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
@@ -261,7 +342,6 @@ public class ChessPiece {
                         pawnMovesCollection.add(move);
                     }
                 }
-
             }
             // black pawn moving forward on second move or later
             else {
@@ -291,7 +371,7 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        switch(type) {
+        switch(board.getPiece(myPosition).getPieceType()) {
             case KING:
                 // code block
                 return kingMoves(board, myPosition);
@@ -310,7 +390,8 @@ public class ChessPiece {
             case PAWN:
                 // code block
                 return pawnMoves(board, myPosition);
+            case null:
+                return null;
         }
-        return null;
     }
 }
