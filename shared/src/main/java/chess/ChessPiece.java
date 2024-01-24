@@ -568,6 +568,85 @@ public class ChessPiece {
     }
     public Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition) {
         rookMovesCollection = new HashSet<>();
+
+
+        // up
+        currentPosition = myPosition;
+        while (currentPosition.getRow() != 8) {
+            ChessPosition up = new ChessPosition(currentPosition.getRow()+1, currentPosition.getColumn());
+            if (board.getPiece(up) == null) {
+                move = new ChessMove(myPosition, up, null);
+                rookMovesCollection.add(move);
+                currentPosition = up;
+            }
+            else if (!isSameColor(board,myPosition,up)) {
+                move = new ChessMove(myPosition, up, null);
+                rookMovesCollection.add(move);
+                break;
+            }
+            else {
+                break;
+            }
+        }
+
+        //down
+        currentPosition = myPosition;
+        while (currentPosition.getRow() != 1) {
+            ChessPosition down = new ChessPosition(currentPosition.getRow() -1, currentPosition.getColumn());
+
+            if (board.getPiece(down) == null) {
+                move = new ChessMove(myPosition, down, null);
+                rookMovesCollection.add(move);
+                currentPosition = down;
+            }
+            else if (!isSameColor(board, myPosition, down)) {
+                move = new ChessMove(myPosition, down, null);
+                rookMovesCollection.add(move);
+                break;
+            }
+            else {
+                break;
+            }
+        }
+        //left
+        currentPosition = myPosition;
+        while (currentPosition.getColumn() != 1) {
+            ChessPosition left = new ChessPosition(currentPosition.getRow(), currentPosition.getColumn() -1);
+
+            if (board.getPiece(left) == null) {
+                move = new ChessMove(myPosition, left, null);
+                rookMovesCollection.add(move);
+                currentPosition = left;
+            }
+            else if (!isSameColor(board, myPosition, left)) {
+                move = new ChessMove(myPosition, left, null);
+                rookMovesCollection.add(move);
+                break;
+            }
+            else {
+                break;
+            }
+        }
+
+        //right
+        currentPosition = myPosition;
+        while (currentPosition.getColumn() != 8) {
+            ChessPosition right = new ChessPosition(currentPosition.getRow(), currentPosition.getColumn() +1);
+            if (board.getPiece(right) == null) {
+                move = new ChessMove(myPosition, right, null);
+                rookMovesCollection.add(move);
+                currentPosition = right;
+            }
+            else if (!isSameColor(board, myPosition, right)) {
+                move = new ChessMove(myPosition, right, null);
+                rookMovesCollection.add(move);
+                break;
+            }
+            else {
+                break;
+            }
+        }
+
         return rookMovesCollection;
     }
     public Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
