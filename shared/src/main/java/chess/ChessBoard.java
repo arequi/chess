@@ -22,7 +22,7 @@ public class ChessBoard {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ChessBoard that = (ChessBoard) o;
-        return Arrays.equals(posArray, that.posArray) && Objects.equals(position, that.position);
+        return Arrays.deepEquals(posArray, that.posArray) && Objects.equals(position, that.position);
     }
 
     @Override
@@ -65,7 +65,6 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-
         // row 8 gets the rest of black pieces -> r n b q k b n r
         posArray[8][1] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK);
         posArray[8][2] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT);
