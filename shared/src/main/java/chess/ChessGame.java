@@ -62,42 +62,34 @@ public class ChessGame {
         //  your own king in check or put your king in check
         // TODO: possibly need to clone board
         movesCollection = new HashSet<>();
-        pieceMovesCollection = new HashSet<>();
         if (board.getPiece(startPosition) == null) {
             return null;
         }
         setTeamTurn(board.getPiece(startPosition).getTeamColor());
         ChessPiece.PieceType type = board.getPiece(startPosition).getPieceType();
         ChessPiece currentPiece = new ChessPiece(teamColor, type);
-        pieceMovesCollection = currentPiece.pieceMoves(board, startPosition);
-        if (pieceMovesCollection == null) {
+        movesCollection = currentPiece.pieceMoves(board, startPosition);
+        if (movesCollection == null) {
             return null;
         }
         //check if pieceMoves put or leave king in check
-        Iterator movesItr = pieceMovesCollection.iterator();
+        Iterator movesItr = movesCollection.iterator();
         while (movesItr.hasNext()) {
             ChessMove nextMove = (ChessMove) movesItr.next();
             try {
                 // create cloned chess board
                 ChessBoard clonedBoard = (ChessBoard) board.clone();
                 // make move in cloned board
-                try {
-                    makeMove(nextMove);
-                } catch (InvalidMoveException e) {
-                    throw new RuntimeException(e);
-                }
-
+                clonedBoard.addPiece(nextMove.getEndPosition(),currentPiece);
                 // check if any piece on the board can capture king of THIS color
                 // add to collection of moves ONLY if MY king is not in check
                 if (!isInCheck(getTeamTurn())) {
-                    pieceMovesCollection.add(nextMove);
+                    movesCollection.add(nextMove);
                 }
-
             } catch (CloneNotSupportedException e) {
                 throw new RuntimeException(e);
             }
         }
-        movesCollection.addAll(pieceMovesCollection);
         return movesCollection;
     }
 
