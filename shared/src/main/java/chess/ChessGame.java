@@ -137,6 +137,7 @@ public class ChessGame {
         //get color that is passed in
         setTeamTurn(teamColor);
         //find position of current king
+        outerloop:
         for (int i = 1; i < 9; i++) {
             for (int j = 1; j < 9; j ++) {
                 ChessPosition position = new ChessPosition(i,j);
@@ -144,6 +145,7 @@ public class ChessGame {
                     ChessPiece.PieceType type = board.getPiece(position).getPieceType();
                     if (type == ChessPiece.PieceType.KING && board.getPiece(position).getTeamColor() == getTeamTurn()) {
                         kingPosition = position;
+                        break outerloop;
                     }
                 }
             }
@@ -153,8 +155,8 @@ public class ChessGame {
         for (int i = 1; i < 9; i++) {
             for (int j = 1; j < 9; j++) {
                 ChessPosition position = new ChessPosition(i,j);
-                if (board.getPiece(position) != null) {
-                    ChessPiece currentPiece = new ChessPiece(getTeamTurn(), board.getPiece(position).getPieceType());
+                if (board.getPiece(position) != null && board.getPiece(position).getTeamColor() != getTeamTurn()) {
+                    ChessPiece currentPiece = new ChessPiece(board.getPiece(position).getTeamColor(), board.getPiece(position).getPieceType());
                     currentMoves = currentPiece.pieceMoves(board, position);
                     movesCollection.addAll(currentMoves);
                 }
@@ -162,7 +164,7 @@ public class ChessGame {
         }
         Iterator<ChessMove> itr = movesCollection.iterator();
         while(itr.hasNext()) {
-            if (itr.next().getEndPosition() == kingPosition) {
+            if (itr.next().getEndPosition().equals(kingPosition)) {
                 return true;
             }
         }
