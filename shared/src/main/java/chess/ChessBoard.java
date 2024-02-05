@@ -28,14 +28,14 @@ public class ChessBoard implements Cloneable{
     @Override
     public int hashCode() {
         int result = Objects.hash(position);
-        result = 31 * result + Arrays.hashCode(posArray);
+        result = 31 * result + Arrays.deepHashCode(posArray);
         return result;
     }
 
     public Object clone() throws CloneNotSupportedException {
         ChessBoard clone = (ChessBoard) super.clone();
-        for (int i = 0; i < 7; i++) {
-            clone.posArray[i] = Arrays.copyOf(posArray[i], 8);
+        for (int i = 1; i < 9; i++) {
+            clone.posArray[i] = Arrays.copyOf(posArray[i], 9);
         }
         return clone;
     }
