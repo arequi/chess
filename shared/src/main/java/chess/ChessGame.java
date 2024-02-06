@@ -128,10 +128,17 @@ public class ChessGame {
             ChessPiece currentPiece = new ChessPiece(currentColor, type);
             board.addPiece(move.getEndPosition(), currentPiece);
         }
+        if (getTeamTurn() == TeamColor.BLACK) {
+            setTeamTurn(TeamColor.WHITE);
+        }
+        else {
+            setTeamTurn(TeamColor.BLACK);
+        }
         if (isInCheck(getTeamTurn())) {
             throw new InvalidMoveException("Invalid move: You put your king in check!");
         }
         board.addPiece(move.getStartPosition(), null);
+
     }
 
     /**
