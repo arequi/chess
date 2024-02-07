@@ -12,9 +12,19 @@ import java.util.Objects;
 public class ChessBoard implements Cloneable{
 
     private ChessPiece[][] posArray = new ChessPiece[9][9];
-    private ChessPosition position;
 
     public ChessBoard() {
+    }
+
+    public ChessBoard chessBoardCopy() {
+        ChessBoard boardCopy = new ChessBoard();
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                ChessPosition position = new ChessPosition(i,j);
+                boardCopy.addPiece(position, posArray[i][j]);
+            }
+        }
+        return  boardCopy;
     }
 
     @Override
@@ -22,22 +32,12 @@ public class ChessBoard implements Cloneable{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ChessBoard that = (ChessBoard) o;
-        return Arrays.deepEquals(posArray, that.posArray) && Objects.equals(position, that.position);
+        return Arrays.deepEquals(posArray, that.posArray);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(position);
-        result = 31 * result + Arrays.deepHashCode(posArray);
-        return result;
-    }
-
-    public Object clone() throws CloneNotSupportedException {
-        ChessBoard clone = (ChessBoard) super.clone();
-        for (int i = 1; i < 9; i++) {
-            clone.posArray[i] = Arrays.copyOf(posArray[i], 9);
-        }
-        return clone;
+        return Arrays.deepHashCode(posArray);
     }
 
     /**

@@ -13,6 +13,8 @@ import java.util.Iterator;
 public class ChessGame {
 
     Collection<ChessMove> movesCollection;
+    Collection<ChessMove> cloneMovesCollection;
+    Collection<ChessMove> movesInCheckCollection;
     Collection<ChessMove> currentMoves;
     ChessGame.TeamColor teamColor;
     ChessBoard board;
@@ -48,13 +50,13 @@ public class ChessGame {
     }
 
     // find current king position
-    public ChessPosition findKing(ChessBoard board) {
+    public ChessPosition findKing(ChessBoard myBoard, TeamColor teamColor) {
         for (int i = 1; i < 9; i++) {
             for (int j = 1; j < 9; j ++) {
                 ChessPosition position = new ChessPosition(i,j);
-                if (board.getPiece(position) != null) {
-                    ChessPiece.PieceType type = board.getPiece(position).getPieceType();
-                    if (type == ChessPiece.PieceType.KING && board.getPiece(position).getTeamColor() == getTeamTurn()) {
+                if (myBoard.getPiece(position) != null) {
+                    ChessPiece.PieceType type = myBoard.getPiece(position).getPieceType();
+                    if (type == ChessPiece.PieceType.KING && myBoard.getPiece(position).getTeamColor() == teamColor) {
                         kingPosition = position;
                     }
                 }
@@ -62,6 +64,42 @@ public class ChessGame {
         }
         return kingPosition;
     }
+
+    public Boolean isKingInDanger(ChessBoard myBoard, TeamColor teamColor) {
+        movesInCheckCollection = new HashSet<>();
+        ChessPosition myKing = findKing(myBoard, teamColor);
+        // iterates through every piece on board
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                ChessPosition position = new ChessPosition(i,j);
+                // only iterates through pieces of opposite color
+                if (myBoard.getPiece(position) != null && myBoard.getPiece(position).getTeamColor() != teamColor) {
+                    ChessPiece.PieceType type = myBoard.getPiece(position).getPieceType();
+                    TeamColor currentColor = myBoard.getPiece(position).getTeamColor();
+                    ChessPiece piece = new ChessPiece(currentColor, type);
+                    cloneMovesCollection = new HashSet<>();
+                    // gets all possible moves for this piece and stores them in cloneMovesCollection
+                    cloneMovesCollection.addAll(piece.pieceMoves(myBoard,position));
+                    Iterator<ChessMove> itr = cloneMovesCollection.iterator();
+                    // iterates through all moves for this piece
+                    while (itr.hasNext()) {
+                        ChessMove nextMove = itr.next();
+                        // adds current move to collection if it lands on the king
+                        if (nextMove.getEndPosition().equals(myKing)) {
+                            movesInCheckCollection.add(nextMove);
+                        }
+                    }
+                }
+            }
+        }
+        // if there is a way out of check from any move, it's not in danger, so return false
+        if (movesInCheckCollection.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
+
 
 
     /**
@@ -79,32 +117,29 @@ public class ChessGame {
         if (board.getPiece(startPosition) == null) {
             return null;
         }
-        setTeamTurn(board.getPiece(startPosition).getTeamColor());
+        TeamColor teamColor = board.getPiece(startPosition).getTeamColor();
         ChessPiece.PieceType type = board.getPiece(startPosition).getPieceType();
         ChessPiece currentPiece = new ChessPiece(teamColor, type);
         movesCollection = currentPiece.pieceMoves(board, startPosition);
         if (movesCollection == null) {
             return null;
         }
+        Collection<ChessMove> validMovesCollection = new HashSet<>();
         //check if pieceMoves put or leave king in check
         Iterator movesItr = movesCollection.iterator();
         while (movesItr.hasNext()) {
             ChessMove nextMove = (ChessMove) movesItr.next();
-            try {
                 // create cloned chess board
-                clonedBoard = (ChessBoard) board.clone();
+                clonedBoard = (ChessBoard) board.chessBoardCopy();
                 // make move in cloned board
                 clonedBoard.addPiece(nextMove.getEndPosition(),currentPiece);
                 // check if any piece on the board can capture king of THIS color
                 // add to collection of moves ONLY if MY king is not in check
-                if (!isInCheck(getTeamTurn())) {
-                    movesCollection.add(nextMove);
+                if (!isKingInDanger(clonedBoard, teamColor)) {
+                    validMovesCollection.add(nextMove);
                 }
-            } catch (CloneNotSupportedException e) {
-                throw new RuntimeException(e);
-            }
         }
-        return movesCollection;
+        return validMovesCollection;
     }
 
     /**
@@ -117,6 +152,18 @@ public class ChessGame {
         ChessGame.TeamColor currentColor = board.getPiece(move.getStartPosition()).getTeamColor();
         if (currentColor != getTeamTurn()) {
             throw new InvalidMoveException("Invalid move: It's not your turn!");
+        }
+        movesCollection = validMoves(move.getStartPosition());
+        Collection<ChessMove> validMovesCollection = new HashSet<>();
+        Iterator itr = movesCollection.iterator();
+        while (itr.hasNext()) {
+            ChessMove currentMove = (ChessMove) itr.next();
+            if (currentMove.equals(move)) {
+                validMovesCollection.add(currentMove);
+            }
+        }
+        if (validMovesCollection.isEmpty()) {
+            throw new InvalidMoveException("Invalid move!");
         }
         if (move.getPromotionPiece() != null) {
             // turn piece into promotion piece
@@ -148,19 +195,18 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
+        setTeamTurn(teamColor);
         // check if king of THIS color can be captured by any piece on the board
         movesCollection = new HashSet<>();
         currentMoves = new HashSet<>();
-        //get color that is passed in
-        setTeamTurn(teamColor);
         //find position of current king
-        kingPosition = findKing(board);
+        kingPosition = findKing(board, teamColor);
         //loop through all positions on the board and
         // add all moves each piece can make to movesCollection set
         for (int i = 1; i < 9; i++) {
             for (int j = 1; j < 9; j++) {
                 ChessPosition position = new ChessPosition(i,j);
-                if (board.getPiece(position) != null && board.getPiece(position).getTeamColor() != getTeamTurn()) {
+                if (board.getPiece(position) != null && board.getPiece(position).getTeamColor() != teamColor) {
                     ChessPiece currentPiece = new ChessPiece(board.getPiece(position).getTeamColor(), board.getPiece(position).getPieceType());
                     currentMoves = currentPiece.pieceMoves(board, position);
                     movesCollection.addAll(currentMoves);
@@ -173,7 +219,6 @@ public class ChessGame {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -185,31 +230,28 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         movesCollection = new HashSet<>();
+
         //TODO: 1. clone board, apply move, then call isinCheck method
-
-
             // find position of king whose turn it is currently
-            kingPosition = findKing(board);
+            kingPosition = findKing(board, teamColor);
             // find all possible moves the king can make
-            ChessPiece kingPiece = new ChessPiece(getTeamTurn(), ChessPiece.PieceType.KING);
+            ChessPiece kingPiece = new ChessPiece(teamColor, ChessPiece.PieceType.KING);
             movesCollection = kingPiece.pieceMoves(board, kingPosition);
             // TODO: if no moves get you out of check, then you're in check mate
             Iterator<ChessMove> itr = movesCollection.iterator();
             ChessMove currentMove;
             while (itr.hasNext()) {
                 currentMove = itr.next();
-                try {
-                clonedBoard = (ChessBoard) board.clone();
+                kingPosition = currentMove.getEndPosition();
+                clonedBoard = board.chessBoardCopy();
                 clonedBoard.addPiece(currentMove.getEndPosition(), kingPiece);
-                } catch (CloneNotSupportedException e) {
-                    throw new RuntimeException(e);
-                }
-                // return false if a single move can get the king out of check
-                if (!isInCheck(getTeamTurn())) {
+                clonedBoard.addPiece(currentMove.getStartPosition(), null);
+                // simulate this move by getting all valid moves from each piece.
+                // If any piece's moves land on the king, it's still in checkMate
+                if (!isKingInDanger(clonedBoard, teamColor)) {
                     return false;
                 }
             }
-
         return true;
     }
 

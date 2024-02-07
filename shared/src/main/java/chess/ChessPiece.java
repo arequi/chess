@@ -125,56 +125,56 @@ public class ChessPiece {
         ChessPosition rightDown = new ChessPosition(position.getRow()-1, position.getColumn()+1);
         if (color == ChessGame.TeamColor.WHITE) {
             // left diag position
-            if (board.getPiece(leftUp) != null) {
-                if (board.getPiece(leftUp).getTeamColor() == ChessGame.TeamColor.BLACK) {
-                    // check if pawn will land on last row
-                    if (needsPromotionPiece(position, color)) {
-                        addPromotionPieces(position, color, leftUp);
-                    }
-                    else {
-                        move = new ChessMove(position, leftUp, null);
-                        pawnMovesCollection.add(move);
-                    }
+            if (position.getRow() != 8) {
+                if (position.getColumn() != 1 && board.getPiece(leftUp) != null) {
+                    if (board.getPiece(leftUp).getTeamColor() == ChessGame.TeamColor.BLACK) {
+                        // check if pawn will land on last row
+                        if (needsPromotionPiece(position, color)) {
+                            addPromotionPieces(position, color, leftUp);
+                        } else {
+                            move = new ChessMove(position, leftUp, null);
+                            pawnMovesCollection.add(move);
+                        }
 
-                }
-            }
-                // right diag position
-            if (board.getPiece(rightUp) != null) {
-                if (board.getPiece(rightUp).getTeamColor() == ChessGame.TeamColor.BLACK) {
-                    if (needsPromotionPiece(position, color)) {
-                        addPromotionPieces(position, color, rightUp);
                     }
-                    else {
-                        move = new ChessMove(position, rightUp, null);
-                        pawnMovesCollection.add(move);
+                }
+                // right diag position
+                if (position.getColumn() != 8 && board.getPiece(rightUp) != null) {
+                    if (board.getPiece(rightUp).getTeamColor() == ChessGame.TeamColor.BLACK) {
+                        if (needsPromotionPiece(position, color)) {
+                            addPromotionPieces(position, color, rightUp);
+                        } else {
+                            move = new ChessMove(position, rightUp, null);
+                            pawnMovesCollection.add(move);
+                        }
                     }
                 }
             }
         }
         // for black pieces
         else {
-            // left diag position
-            if (board.getPiece(leftDown) != null) {
-                if (board.getPiece(leftDown).getTeamColor() == ChessGame.TeamColor.WHITE) {
-                    //check if pawn will land on last row (needs promotionPiece)
-                    if (needsPromotionPiece(position, color)) {
-                        addPromotionPieces(position, color, leftDown);
-                    }
-                    else {
-                        move = new ChessMove(position, leftDown, null);
-                        pawnMovesCollection.add(move);
+            if (position.getRow() != 1) {
+                // left diag position
+                if (position.getColumn() != 1 && board.getPiece(leftDown) != null) {
+                    if (board.getPiece(leftDown).getTeamColor() == ChessGame.TeamColor.WHITE) {
+                        //check if pawn will land on last row (needs promotionPiece)
+                        if (needsPromotionPiece(position, color)) {
+                            addPromotionPieces(position, color, leftDown);
+                        } else {
+                            move = new ChessMove(position, leftDown, null);
+                            pawnMovesCollection.add(move);
+                        }
                     }
                 }
-            }
-            // right diag position
-            if (board.getPiece(rightDown) != null) {
-                if (board.getPiece(rightDown).getTeamColor() == ChessGame.TeamColor.WHITE) {
-                    if (needsPromotionPiece(position, color)) {
-                        addPromotionPieces(position, color, rightDown);
-                    }
-                    else {
-                        move = new ChessMove(position, rightDown, null);
-                        pawnMovesCollection.add(move);
+                // right diag position
+                if (position.getColumn() != 8 && board.getPiece(rightDown) != null) {
+                    if (board.getPiece(rightDown).getTeamColor() == ChessGame.TeamColor.WHITE) {
+                        if (needsPromotionPiece(position, color)) {
+                            addPromotionPieces(position, color, rightDown);
+                        } else {
+                            move = new ChessMove(position, rightDown, null);
+                            pawnMovesCollection.add(move);
+                        }
                     }
                 }
             }
@@ -465,7 +465,7 @@ public class ChessPiece {
         }
         // down right movement
         currentPosition = myPosition;
-        while (currentPosition.getRow() != 1 && currentPosition.getColumn() != 1) {
+        while (currentPosition.getRow() != 1 && currentPosition.getColumn() != 8) {
             ChessPosition downRight = new ChessPosition(currentPosition.getRow()-1, currentPosition.getColumn()+1);
             if (board.getPiece(downRight) == null) {
                 move = new ChessMove(myPosition, downRight, null);
