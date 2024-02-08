@@ -1,5 +1,6 @@
 package chess;
 
+import javax.imageio.stream.ImageOutputStream;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -133,6 +134,7 @@ public class ChessGame {
                 clonedBoard = (ChessBoard) board.chessBoardCopy();
                 // make move in cloned board
                 clonedBoard.addPiece(nextMove.getEndPosition(),currentPiece);
+                clonedBoard.addPiece(nextMove.getStartPosition(), null);
                 // check if any piece on the board can capture king of THIS color
                 // add to collection of moves ONLY if MY king is not in check
                 if (!isKingInDanger(clonedBoard, teamColor)) {
@@ -175,17 +177,16 @@ public class ChessGame {
             ChessPiece currentPiece = new ChessPiece(currentColor, type);
             board.addPiece(move.getEndPosition(), currentPiece);
         }
+        board.addPiece(move.getStartPosition(), null);
+        if (isInCheck(getTeamTurn())) {
+            throw new InvalidMoveException("Invalid move: You put your king in check!");
+        }
         if (getTeamTurn() == TeamColor.BLACK) {
             setTeamTurn(TeamColor.WHITE);
         }
         else {
             setTeamTurn(TeamColor.BLACK);
         }
-        if (isInCheck(getTeamTurn())) {
-            throw new InvalidMoveException("Invalid move: You put your king in check!");
-        }
-        board.addPiece(move.getStartPosition(), null);
-
     }
 
     /**
@@ -195,7 +196,6 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        setTeamTurn(teamColor);
         // check if king of THIS color can be captured by any piece on the board
         movesCollection = new HashSet<>();
         currentMoves = new HashSet<>();
@@ -237,6 +237,11 @@ public class ChessGame {
             // find all possible moves the king can make
             ChessPiece kingPiece = new ChessPiece(teamColor, ChessPiece.PieceType.KING);
             movesCollection = kingPiece.pieceMoves(board, kingPosition);
+            ChessBoard clonedBoardReset = board.chessBoardCopy();
+            clonedBoardReset.resetBoard();
+            if (board.equals(clonedBoardReset)) {
+                return false;
+            }
             // TODO: if no moves get you out of check, then you're in check mate
             Iterator<ChessMove> itr = movesCollection.iterator();
             ChessMove currentMove;
@@ -252,6 +257,7 @@ public class ChessGame {
                     return false;
                 }
             }
+
         return true;
     }
 
@@ -263,9 +269,27 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        movesCollection = new HashSet<>();
+        Collection<ChessMove> currentMovesCollection = new HashSet<>();
         // simplified version from real chess: if you don't have any valid moves
-        throw new RuntimeException("Not implemented");
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                ChessPosition currentPosition = new ChessPosition(i, j);
+                if (board.getPiece(currentPosition) != null) {
+                    ChessGame.TeamColor currentColor = board.getPiece(currentPosition).getTeamColor();
+                    if (currentColor == teamColor) {
+                        Collection <ChessMove> moves = validMoves(currentPosition);
+                        if (!moves.isEmpty()) {
+                            currentMovesCollection.addAll(moves);
+                        }
+                    }
+                }
+
+            }
+        }
+        if (currentMovesCollection.isEmpty()) {
+            return true;
+        }
+        return false;
     }
 
     /**
