@@ -16,20 +16,14 @@ public class ClearService {
         ClearResponse result;
         try {
             new MemoryUserDAO().clear();
-            result = new ClearResponse("Clear succeeded.", true);
-            result.setMessage("Clear succeeded.");
-            result.setSuccess(true);
+            new MemoryGameDAO().clear();
+            new MemoryAuthDAO().clear();
+            result = new ClearResponse(true, "Clear succeeded.");
             return result;
-
         } catch (Exception ex) {
             ex.printStackTrace();
-            result = new ClearResponse("Error: could not clear data.", false);
-            result.setSuccess(false);
-            result.setMessage("Could not clear data.");
+            result = new ClearResponse(true, "Error: could not clear data.");
             return result;
         }
-
     }
-
-
 }

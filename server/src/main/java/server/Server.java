@@ -1,56 +1,31 @@
 package server;
 
+import com.google.gson.Gson;
 import spark.*;
 import handler.*;
+import service.*;
 
 public class Server {
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
-
         Spark.staticFiles.location("web");
-
-        // Register your endpoints and handle exceptions here.
-        Spark.delete("/db", this::clear);
-        Spark.post("/user", this::register);
-        Spark.post("/session", this::login);
-        Spark.delete("/session", this::logout);
-        Spark.get("/game", this::listGames);
-        Spark.post("/game", this::createGame);
-        Spark.put("/game", this::joinGame);
-
+        createRoutes();
+        Spark.init();
         Spark.awaitInitialization();
         return Spark.port();
     }
-
-    private Object joinGame(Request request, Response response) {
+    void createRoutes() {
+        // Register your endpoints and handle exceptions here.
+        Spark.delete("/db", (req, res) -> (new ClearHandler()).handle(new Gson()));
+//        Spark.post("/user", (req, res) -> (new RegisterHandler().handle(new Gson())));
+//        Spark.post("/session", this::login);
+//        Spark.delete("/session", this::logout);
+//        Spark.get("/game", this::listGames);
+//        Spark.post("/game", this::createGame);
+//        Spark.put("/game", this::joinGame);
     }
 
-    private Object createGame(Request request, Response response) {
-        return null;
-    }
-
-    private Object listGames(Request request, Response response) {
-        return null;
-    }
-
-    private Object logout(Request request, Response response) {
-        return null;
-    }
-
-    private Object login(Request request, Response response) {
-        return null;
-    }
-
-    private Object clear(Request request, Response response) {
-        service.clearService();
-        res.status(204);
-        return "";
-    }
-
-    private Object register(Request request, Response response) {
-        return null;
-    }
 
     public void stop() {
         Spark.stop();

@@ -1,4 +1,6 @@
 package response;
 
-public class RegisterResponse {
+public record RegisterResponse(String username, String authToken, Boolean success, String message) {
+
 }
+

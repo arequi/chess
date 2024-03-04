@@ -1,4 +1,4 @@
 package response;
 
-public class LogoutResponse {
+public record LogoutResponse(Boolean success, String message) {
 }

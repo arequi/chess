@@ -9,9 +9,8 @@ public class ClearHandler {
     public ClearResponse handle(Gson gson) {
 
         ClearService service = new ClearService();
-        ClearResponse response = service.clear();
 
-        return response;
+        return service.clear();
     }
 
 }

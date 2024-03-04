@@ -1,4 +1,4 @@
 package response;
 
-public class JoinGameResponse {
+public record JoinGameResponse() {
 }

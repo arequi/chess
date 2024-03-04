@@ -8,13 +8,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 public class MemoryUserDAO implements UserDAO{
-    final private ArrayList<UserData> userDataArrayList = new ArrayList<>();
+    static public ArrayList<UserData> userDataArrayList = new ArrayList<>();
     public void clear() throws DataAccessException{
         userDataArrayList.clear();
     }
     @Override
-    public void createUser(UserData userData) throws DataAccessException {
-        userDataArrayList.add(userData);
+    public void createUser(String username, String password, String email) throws DataAccessException {
+        UserData newUser = new UserData(username, password, email);
+        userDataArrayList.add(newUser);
     }
 
     @Override

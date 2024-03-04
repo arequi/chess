@@ -1,4 +1,4 @@
 package request;
 
-public class ListGamesRequest {
+public record ListGamesRequest() {
 }

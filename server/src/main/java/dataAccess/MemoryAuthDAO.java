@@ -2,28 +2,59 @@ package dataAccess;
 
 import model.AuthData;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.UUID;
 
 public class MemoryAuthDAO implements AuthDAO{
-    final private Collection<AuthData> authDataCollection = new HashSet<>();
+    static public ArrayList<AuthData> authDataArrayList = new ArrayList<>();
     @Override
     public void clear() throws DataAccessException {
-        authDataCollection.clear();
+        authDataArrayList.clear();
     }
 
     @Override
-    public void createAuth() throws DataAccessException {
-
+    public AuthData createAuth(String username) throws DataAccessException {
+        String auth = UUID.randomUUID().toString();
+        AuthData newAuthToken = new AuthData(auth, username);
+        authDataArrayList.add(newAuthToken);
+        return newAuthToken;
     }
 
     @Override
     public AuthData getAuth(String authToken) throws DataAccessException {
+        Iterator<AuthData> itr = authDataArrayList.iterator();
+        AuthData data;
+        while (itr.hasNext()) {
+            data = itr.next();
+            if (data.authToken().equals(authToken)) {
+                return data;
+            }
+        }
         return null;
     }
 
+    public String findAuthByUser(String username) throws DataAccessException{
+        Iterator<AuthData> itr = authDataArrayList.iterator();
+        while (itr.hasNext()) {
+            AuthData currentAuth = itr.next();
+            if (currentAuth.username().equals(username)) {
+                return currentAuth.authToken();
+            }
+        }
+        return null;
+    }
+
+
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-
+        Iterator<AuthData> itr = authDataArrayList.iterator();
+        AuthData data;
+        while (itr.hasNext()) {
+            data = itr.next();
+            if (data.authToken().equals(authToken)) {
+                authDataArrayList.remove(data);
+            }
+        }
     }
 }
