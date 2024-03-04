@@ -39,7 +39,7 @@ public class GameService {
             return new JoinGameResponse(gameID, false, "invalid autToken");
         }
         if (new MemoryGameDAO().getGame(gameID) == null) {
-            return new JoinGameResponse(0, false, "game doesn't exits. unable to join.");
+            return new JoinGameResponse(0, false, "game doesn't exist. unable to join.");
         }
         String username = (new MemoryAuthDAO().getAuth(auth)).username();
         GameData gameData = new MemoryGameDAO().getGame(gameID);
