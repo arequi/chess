@@ -17,9 +17,6 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class UserServiceTests {
-    private String reqData;
-    private RegisterRequest request;
-    private RegisterResponse result;
     UserData realUser;
     UserData fakeUser;
     @BeforeEach

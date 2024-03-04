@@ -1,4 +1,4 @@
 package response;
 
-public record JoinGameResponse() {
+public record JoinGameResponse(int gameID, Boolean success, String message) {
 }

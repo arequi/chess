@@ -15,12 +15,13 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
-    public void createGame(String gameName) throws DataAccessException {
+    public GameData createGame(String gameName) throws DataAccessException {
         Random rand = new Random();
-        int gameID = rand.nextInt(100);
+        int gameID = rand.nextInt(100) + 1;
         ChessGame newGame = new ChessGame();
         GameData data = new GameData(gameID, null, null, gameName, newGame);
         gameDataArrayList.add(data);
+        return data;
     }
 
     @Override
