@@ -28,7 +28,7 @@ public class Server {
     void createRoutes() {
         // Register your endpoints and handle exceptions here.
         // ClearHandler
-        Spark.delete("/db", (req, res) -> (new ClearHandler()).handle());
+        Spark.delete("/db", (req, res) -> (new ClearHandler()).handle(req, res));
         // RegisterHandler
         Spark.post("/user", (req, res) -> (new RegisterHandler()).handle(req, res));
         // LoginHandler

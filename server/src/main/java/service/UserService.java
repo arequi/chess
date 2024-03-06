@@ -14,7 +14,7 @@ public class UserService {
 
     public RegisterResponse register(UserData user) throws DataAccessException {
          if (new MemoryUserDAO().getUser(user.username()) != null) {
-            return new RegisterResponse(null, null, false, "Error: Could not register.");
+            throw new DataAccessException("User already registered.");
         }
         AuthData authToken = new MemoryAuthDAO().createAuth(user.username());
         new MemoryUserDAO().createUser(user.username(), user.password(), user.email());
@@ -39,11 +39,11 @@ public class UserService {
     public LogoutResponse logout(String auth) throws DataAccessException {
         if (new MemoryAuthDAO().getAuth(auth) == null) {
             return new LogoutResponse(false, "Could not log out. User does not exist");
+            //TODO: maybe replace with next line
+            //throw new DataAccessException("AutToken is not valid");
         }
-        else {
             new MemoryAuthDAO().deleteAuth(auth);
             return new LogoutResponse(true, null);
-        }
     }
 
 }

@@ -1,20 +1,21 @@
 package handler;
 
 import com.google.gson.Gson;
-import model.UserData;
-import request.ClearRequest;
+import dataAccess.DataAccessException;
 import response.ClearResponse;
-import response.RegisterResponse;
 import service.ClearService;
 import spark.Request;
 import spark.Response;
 
 public class ClearHandler {
+    ClearService clearService = new ClearService();
 
-    public Object handle() {
-        ClearService service = new ClearService();
-        ClearResponse clearResponse = service.clear();
-        return new Gson().toJson(clearResponse);
+    public ClearHandler() {
     }
 
+    public Object handle(Request req, Response res) throws DataAccessException{
+        clearService.clear();
+        res.status(200);
+        return new Gson().toJson("{}");
+    }
 }
