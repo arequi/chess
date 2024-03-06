@@ -7,8 +7,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import static server.Server.userDataArrayList;
+
 public class MemoryUserDAO implements UserDAO{
-    static public ArrayList<UserData> userDataArrayList = new ArrayList<>();
+
     public void clear() throws DataAccessException{
         userDataArrayList.clear();
     }

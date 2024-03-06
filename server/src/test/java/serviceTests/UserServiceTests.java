@@ -1,6 +1,7 @@
 package serviceTests;
 
 import dataAccess.DataAccessException;
+import dataAccess.MemoryAuthDAO;
 import dataAccess.MemoryUserDAO;
 import model.UserData;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,14 +16,17 @@ import service.UserService;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static server.Server.userDataArrayList;
 
 public class UserServiceTests {
     UserData realUser;
     UserData fakeUser;
+    String fakeAuth;
     @BeforeEach
     public void setUp() throws DataAccessException{
         realUser = new UserData("sarahg3545", "nicole", "sgonza@byu");
         fakeUser = new UserData("not real", "bleh", "@byu");
+        fakeAuth = "im a fake authtoken...";
     }
 
 
@@ -30,7 +34,7 @@ public class UserServiceTests {
     void registerPass() throws DataAccessException {
         ClearService clearService = new ClearService();
         ClearResponse clearResult = clearService.clear();
-        ArrayList<UserData> data = MemoryUserDAO.userDataArrayList;
+        ArrayList<UserData> data = userDataArrayList;
         assertEquals(data.size(), 0);
         assertTrue(clearResult.success());
         UserData user = new UserData("sarahg3545", "bscdsoiuco", "sgona22@byu.edu");
@@ -62,13 +66,13 @@ public class UserServiceTests {
     @Test
     void logoutPass() throws DataAccessException{
         new ClearService().clear();
-        new MemoryUserDAO().createUser(realUser.username(), realUser.password(), realUser.email());
-        assertTrue(new UserService().logout(realUser).success());
+        String auth = new UserService().register(realUser).authToken();
+        assertTrue(new UserService().logout(auth).success());
     }
     @Test
     void logoutFail() throws DataAccessException{
         new ClearService().clear();
-        assertFalse(new UserService().logout(fakeUser).success());
+        assertFalse(new UserService().logout(fakeAuth).success());
     }
 
 

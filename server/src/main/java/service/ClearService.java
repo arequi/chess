@@ -5,6 +5,8 @@ import dataAccess.*;
 
 public class ClearService {
 
+    ClearResponse result;
+
 
     /**
      * Creates result after attempting to clear.
@@ -13,7 +15,7 @@ public class ClearService {
      */
 
     public ClearResponse clear() {
-        ClearResponse result;
+
         try {
             new MemoryUserDAO().clear();
             new MemoryGameDAO().clear();

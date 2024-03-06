@@ -13,16 +13,19 @@ import response.ListGamesResponse;
 
 import java.util.ArrayList;
 
+import static server.Server.authDataArrayList;
+import static server.Server.gameDataArrayList;
+
 public class GameService {
 
     public ListGamesResponse listGames(String auth) throws DataAccessException {
         if (new MemoryAuthDAO().getAuth(auth) == null) {
             return new ListGamesResponse(null, false, "invalid authToken");
         }
-        if (MemoryAuthDAO.authDataArrayList.isEmpty()) {
+        if (authDataArrayList.isEmpty()) {
             return new ListGamesResponse(null, false, "no games to list");
         }
-        ArrayList<GameData> gameList = MemoryGameDAO.gameDataArrayList;
+        ArrayList<GameData> gameList = gameDataArrayList;
         return new ListGamesResponse(gameList, true, null);
     }
 

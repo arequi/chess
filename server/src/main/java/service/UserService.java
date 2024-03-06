@@ -36,12 +36,11 @@ public class UserService {
             return new LoginResponse(null, null, false, "Error: Could not login.");
         }
     }
-    public LogoutResponse logout(UserData user) throws DataAccessException {
-        if (new MemoryUserDAO().getUser(user.username()) == null) {
+    public LogoutResponse logout(String auth) throws DataAccessException {
+        if (new MemoryAuthDAO().getAuth(auth) == null) {
             return new LogoutResponse(false, "Could not log out. User does not exist");
         }
         else {
-            String auth = new MemoryAuthDAO().findAuthByUser(user.username());
             new MemoryAuthDAO().deleteAuth(auth);
             return new LogoutResponse(true, null);
         }

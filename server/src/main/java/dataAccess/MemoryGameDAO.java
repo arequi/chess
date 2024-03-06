@@ -6,9 +6,10 @@ import model.GameData;
 import java.util.*;
 
 import static java.lang.Math.random;
+import static server.Server.gameDataArrayList;
 
 public class MemoryGameDAO implements GameDAO{
-    static public ArrayList<GameData> gameDataArrayList = new ArrayList<>();
+
     @Override
     public void clear() throws DataAccessException {
         gameDataArrayList.clear();

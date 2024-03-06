@@ -6,8 +6,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.UUID;
 
+import static server.Server.authDataArrayList;
+
 public class MemoryAuthDAO implements AuthDAO{
-    static public ArrayList<AuthData> authDataArrayList = new ArrayList<>();
+
+    AuthData data;
+
     @Override
     public void clear() throws DataAccessException {
         authDataArrayList.clear();
@@ -33,26 +37,14 @@ public class MemoryAuthDAO implements AuthDAO{
         return null;
     }
 
-    public String findAuthByUser(String username) throws DataAccessException{
-        Iterator<AuthData> itr = authDataArrayList.iterator();
-        while (itr.hasNext()) {
-            AuthData currentAuth = itr.next();
-            if (currentAuth.username().equals(username)) {
-                return currentAuth.authToken();
-            }
-        }
-        return null;
-    }
-
-
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
         Iterator<AuthData> itr = authDataArrayList.iterator();
-        AuthData data;
         while (itr.hasNext()) {
             data = itr.next();
             if (data.authToken().equals(authToken)) {
                 authDataArrayList.remove(data);
+                break;
             }
         }
     }
