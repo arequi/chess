@@ -13,8 +13,11 @@ import response.RegisterResponse;
 public class UserService {
 
     public RegisterResponse register(UserData user) throws DataAccessException {
-         if (new MemoryUserDAO().getUser(user.username()) != null) {
-            throw new DataAccessException("User already registered.");
+        if (user.username() == null || user.password() == null) {
+            throw new DataAccessException("Error: bad request");
+        }
+         else if (new MemoryUserDAO().getUser(user.username()) != null) {
+             throw new DataAccessException("Error: already taken");
         }
         AuthData authToken = new MemoryAuthDAO().createAuth(user.username());
         new MemoryUserDAO().createUser(user.username(), user.password(), user.email());
@@ -24,7 +27,7 @@ public class UserService {
 
     public LoginResponse login(UserData user) throws DataAccessException {
         if (new MemoryUserDAO().getUser(user.username()) == null) {
-            return new LoginResponse(null, null, false, "Error: Could not login.");
+            throw new DataAccessException("Error: unauthorized");
         }
         UserData memoryUser = new MemoryUserDAO().getUser(user.username());
         if (memoryUser.password().equals(user.password())) {
@@ -33,14 +36,14 @@ public class UserService {
             return new LoginResponse(user.username(), authString, true, null);
         }
         else {
-            return new LoginResponse(null, null, false, "Error: Could not login.");
+            throw new DataAccessException("Error: unauthorized");
         }
     }
     public LogoutResponse logout(String auth) throws DataAccessException {
         if (new MemoryAuthDAO().getAuth(auth) == null) {
-            return new LogoutResponse(false, "Could not log out. User does not exist");
+            new LogoutResponse(false, "Could not log out. User does not exist");
             //TODO: maybe replace with next line
-            //throw new DataAccessException("AutToken is not valid");
+            throw new DataAccessException("Error: unauthorized");
         }
             new MemoryAuthDAO().deleteAuth(auth);
             return new LogoutResponse(true, null);

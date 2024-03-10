@@ -1,21 +1,18 @@
 package server;
 
-import com.google.gson.Gson;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
 import spark.*;
 import handler.*;
-import service.*;
 
 import java.util.ArrayList;
-import java.util.logging.Handler;
 
 public class Server {
 
-    static public ArrayList<AuthData> authDataArrayList = new ArrayList<>();
-    static public ArrayList<GameData> gameDataArrayList = new ArrayList<>();
-    static public ArrayList<UserData> userDataArrayList = new ArrayList<>();
+    static final public ArrayList<AuthData> authDataArrayList = new ArrayList<>();
+    static final public ArrayList<GameData> gameDataArrayList = new ArrayList<>();
+    static final public ArrayList<UserData> userDataArrayList = new ArrayList<>();
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -36,11 +33,11 @@ public class Server {
         // LogoutHandler
         Spark.delete("/session", (req, res) -> (new LogoutHandler()).handle(req, res));
         // ListGamesHandler
-//        Spark.get("/game", (req, res) -> (new ListGamesHandler().handle(req, res));
+        Spark.get("/game", (req, res) -> (new ListGamesHandler()).handle(req, res));
         // CreateGameHandler
-//        Spark.post("/game", (req, res) -> (new CreateGameHandler().handle(req, res));
+        Spark.post("/game", (req, res) -> (new CreateGameHandler()).handle(req, res));
         // JoinGameHandler
-//        Spark.put("/game", (req, res) -> (new JoinGameHandler().handle(req, res));
+        Spark.put("/game", (req, res) -> (new JoinGameHandler()).handle(req, res));
     }
 
 

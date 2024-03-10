@@ -2,6 +2,7 @@ package dataAccess;
 
 import model.UserData;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -32,6 +33,4 @@ public class MemoryUserDAO implements UserDAO{
         }
         return null;
     }
-
-
 }

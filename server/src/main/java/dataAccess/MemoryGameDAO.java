@@ -10,6 +10,8 @@ import static server.Server.gameDataArrayList;
 
 public class MemoryGameDAO implements GameDAO{
 
+    GameData data;
+
     @Override
     public void clear() throws DataAccessException {
         gameDataArrayList.clear();
@@ -18,7 +20,7 @@ public class MemoryGameDAO implements GameDAO{
     @Override
     public GameData createGame(String gameName) throws DataAccessException {
         Random rand = new Random();
-        int gameID = rand.nextInt(100) + 1;
+        int gameID = rand.nextInt(10000) + 1;
         ChessGame newGame = new ChessGame();
         GameData data = new GameData(gameID, null, null, gameName, newGame);
         gameDataArrayList.add(data);
@@ -28,7 +30,6 @@ public class MemoryGameDAO implements GameDAO{
     @Override
     public GameData getGame(int gameID) throws DataAccessException {
         Iterator<GameData> itr = gameDataArrayList.iterator();
-        GameData data;
         while(itr.hasNext()) {
             data = itr.next();
             if (data.gameID() == gameID) {
@@ -44,14 +45,14 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
-    public void updateGame(int gameID, GameData updatedGame) throws DataAccessException {
+    public void updateGame(int gameID, GameData updatedGame) {
         Iterator<GameData> itr = gameDataArrayList.iterator();
-        GameData data;
         while (itr.hasNext()) {
             data = itr.next();
             if (data.gameID() == gameID) {
                 gameDataArrayList.remove(data);
                 gameDataArrayList.add(updatedGame);
+                break;
             }
         }
     }

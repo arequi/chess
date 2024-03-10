@@ -9,6 +9,7 @@ import org.eclipse.jetty.server.Authentication;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import response.CreateGameResponse;
+import response.JoinGameResponse;
 import response.RegisterResponse;
 import service.ClearService;
 import service.GameService;
@@ -92,7 +93,8 @@ public class GameServiceTests {
         RegisterResponse result = new UserService().register(realUser);
         realAuth = result.authToken();
         CreateGameResponse newGame = new GameService().CreateGame("mygame", realAuth);
-        assertTrue(new GameService().JoinGame("white", newGame.gameID(), realAuth).success());
+        JoinGameResponse joinGameResponse = new GameService().JoinGame("WHITE", newGame.gameID(), realAuth);
+        assertEquals(new MemoryGameDAO().getGame(joinGameResponse.gameID()).whiteUsername(), realUser.username());
     }
 
     @Test
@@ -102,6 +104,6 @@ public class GameServiceTests {
         RegisterResponse result = new UserService().register(realUser);
         realAuth = result.authToken();
         CreateGameResponse newGameResponse = new GameService().CreateGame("mygame", realAuth);
-        assertFalse(new GameService().JoinGame("white", fakeGameID, realAuth).success());
+        assertFalse(new GameService().JoinGame("WHITE", fakeGameID, realAuth).success());
     }
 }

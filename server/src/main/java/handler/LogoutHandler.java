@@ -1,6 +1,8 @@
 package handler;
 
+import com.google.gson.Gson;
 import response.LogoutResponse;
+import response.RegisterResponse;
 import service.UserService;
 import spark.Request;
 import spark.Response;
@@ -18,11 +20,12 @@ public class LogoutHandler implements Route {
             res.status(200);
             return "{}";
         } catch (DataAccessException e) {
-            new LogoutResponse(false, "could not log out.");
             DataAccessException exceptionData = new DataAccessException(e.getMessage());
             System.out.println(exceptionData.getMessage());
+            LogoutResponse logoutResponse = new LogoutResponse( false, "Error: could not log out.");
+            res.status(401);
+            return new Gson().toJson(logoutResponse);
         }
-        return null;
     }
 }
 
