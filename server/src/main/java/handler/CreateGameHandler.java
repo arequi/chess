@@ -24,8 +24,7 @@ public class CreateGameHandler implements Route {
             res.status(200);
             return new Gson().toJson(createGameResponse);
         } catch (DataAccessException e) {
-            CreateGameResponse createGameResponse = new CreateGameResponse( null,
-                    false, "Error: Unable to create game");
+            CreateGameResponse createGameResponse = new CreateGameResponse( null, "Error: Unable to create game");
             DataAccessException exceptionData = new DataAccessException(e.getMessage());
             System.out.println(exceptionData.getMessage());
             if (e.getMessage().equals("Error: unauthorized")) {

@@ -28,8 +28,7 @@ public class ListGamesHandler implements Route  {
             return new Gson().toJson(Map.of("games", listGamesResponse.games()));
         } catch (DataAccessException e) {
             res.status(401);
-            ListGamesResponse listGamesResponse = new ListGamesResponse( null,
-                    false, "Error: Unable to list games");
+            ListGamesResponse listGamesResponse = new ListGamesResponse( null, "Error: Unable to list games");
             DataAccessException exceptionData = new DataAccessException(e.getMessage());
             System.out.println(exceptionData.getMessage());
             return new Gson().toJson(listGamesResponse);

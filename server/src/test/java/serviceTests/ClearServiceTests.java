@@ -18,9 +18,8 @@ public class ClearServiceTests {
     public void clearPass() throws DataAccessException {
         new MemoryUserDAO().createUser("sarahg3545", "bscdsoiuco", "sgona22@byu.edu");
         assertNotNull(userDataArrayList);
-        ClearService clearService = new ClearService();
-        ClearResponse result = clearService.clear();
-        assertEquals(result.success(), true);
+        new ClearService().clear();
+        assertTrue(userDataArrayList.isEmpty());
     }
 
 }

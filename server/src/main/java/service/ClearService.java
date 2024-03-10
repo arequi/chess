@@ -18,7 +18,7 @@ public class ClearService {
         new MemoryUserDAO().clear();
         new MemoryGameDAO().clear();
         new MemoryAuthDAO().clear();
-        result = new ClearResponse(true, "Clear succeeded.");
+        result = new ClearResponse("Clear succeeded.");
         return result;
     }
 }

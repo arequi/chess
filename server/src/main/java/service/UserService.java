@@ -22,7 +22,7 @@ public class UserService {
         AuthData authToken = new MemoryAuthDAO().createAuth(user.username());
         new MemoryUserDAO().createUser(user.username(), user.password(), user.email());
         String authString = authToken.authToken();
-        return new RegisterResponse(user.username(), authString, true, null);
+        return new RegisterResponse(user.username(), authString, null);
     }
 
     public LoginResponse login(UserData user) throws DataAccessException {
@@ -33,7 +33,7 @@ public class UserService {
         if (memoryUser.password().equals(user.password())) {
             AuthData authToken = new MemoryAuthDAO().createAuth(user.username());
             String authString = authToken.authToken();
-            return new LoginResponse(user.username(), authString, true, null);
+            return new LoginResponse(user.username(), authString, null);
         }
         else {
             throw new DataAccessException("Error: unauthorized");
@@ -41,12 +41,11 @@ public class UserService {
     }
     public LogoutResponse logout(String auth) throws DataAccessException {
         if (new MemoryAuthDAO().getAuth(auth) == null) {
-            new LogoutResponse(false, "Could not log out. User does not exist");
-            //TODO: maybe replace with next line
+            new LogoutResponse("Could not log out. User does not exist");
             throw new DataAccessException("Error: unauthorized");
         }
             new MemoryAuthDAO().deleteAuth(auth);
-            return new LogoutResponse(true, null);
+            return new LogoutResponse(null);
     }
 
 }

@@ -32,6 +32,7 @@ public class GameServiceTests {
 
     @BeforeEach
     public void setup() throws DataAccessException {
+        new ClearService().clear();
         ChessGame game = new ChessGame();
         ChessGame otherGame = new ChessGame();
         realUser = new UserData("sgonza", "3545", "@byu");
@@ -44,7 +45,6 @@ public class GameServiceTests {
 
     @Test
     void ListGamesPass() throws DataAccessException{
-        new ClearService().clear();
         RegisterResponse result = new UserService().register(realUser);
         realAuth = result.authToken();
         new GameService().CreateGame("myGame", realAuth);
@@ -57,39 +57,35 @@ public class GameServiceTests {
 
     @Test
     void ListGamesFail() throws DataAccessException{
-        new ClearService().clear();
         RegisterResponse result = new UserService().register(realUser);
         realAuth = result.authToken();
         new GameService().CreateGame("myGame", realAuth);
         ArrayList<GameData> games = new GameService().listGames(realAuth).games();
         assertEquals(1, games.size());
-        assertFalse(new GameService().listGames(fakeAuth).success());
+        assertThrows(DataAccessException.class, ()->new GameService().listGames(fakeAuth));
     }
 
     @Test
     void CreateGamePass() throws DataAccessException{
-        new ClearService().clear();
         RegisterResponse result = new UserService().register(realUser);
         realAuth = result.authToken();
         assertTrue(new MemoryGameDAO().listGames().isEmpty());
         new GameService().CreateGame("myGame", realAuth);
         assertNotNull(new MemoryGameDAO().listGames());
-        assertTrue(new GameService().CreateGame("myGame", realAuth).success());
     }
 
     @Test
     void CreateGameFail() throws DataAccessException{
-        new ClearService().clear();
-        realAuth = "fakeAuth";
+        RegisterResponse result = new UserService().register(realUser);
+        realAuth = result.authToken();
         assertTrue(new MemoryGameDAO().listGames().isEmpty());
         new GameService().CreateGame("myGame", realAuth);
         assertNotNull(new MemoryGameDAO().listGames());
-        assertFalse(new GameService().CreateGame("myGame", realAuth).success());
+        assertThrows(DataAccessException.class, ()-> new GameService().CreateGame("fakeGame", fakeAuth));
     }
 
     @Test
     void JoinGamePass() throws DataAccessException{
-        new ClearService().clear();
         RegisterResponse result = new UserService().register(realUser);
         realAuth = result.authToken();
         CreateGameResponse newGame = new GameService().CreateGame("mygame", realAuth);
@@ -99,11 +95,9 @@ public class GameServiceTests {
 
     @Test
     void JoinGameFail() throws DataAccessException{
-        // if gameID is invalid or authToken is invalid
-        new ClearService().clear();
         RegisterResponse result = new UserService().register(realUser);
         realAuth = result.authToken();
-        CreateGameResponse newGameResponse = new GameService().CreateGame("mygame", realAuth);
-        assertFalse(new GameService().JoinGame("WHITE", fakeGameID, realAuth).success());
+        new GameService().CreateGame("mygame", realAuth);
+        assertThrows(DataAccessException.class, ()->new GameService().JoinGame("WHOTE", fakeGameID, realAuth));
     }
 }

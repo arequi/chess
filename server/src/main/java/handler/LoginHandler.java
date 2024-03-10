@@ -25,8 +25,7 @@ public class LoginHandler implements Route {
             return new Gson().toJson(response);
         } catch (DataAccessException e) {
             res.status(401);
-            LoginResponse loginResponse = new LoginResponse(null, null,
-                    false, "Error: Username or password incorrect.");
+            LoginResponse loginResponse = new LoginResponse(null, null, "Error: Username or password incorrect.");
             DataAccessException exceptionData = new DataAccessException(e.getMessage());
             System.out.println(exceptionData.getMessage());
             return new Gson().toJson(loginResponse);

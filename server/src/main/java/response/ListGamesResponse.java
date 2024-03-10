@@ -4,5 +4,5 @@ import model.GameData;
 
 import java.util.ArrayList;
 
-public record ListGamesResponse(ArrayList<GameData> games, Boolean success, String message) {
+public record ListGamesResponse(ArrayList<GameData> games, String message) {
 }

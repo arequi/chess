@@ -21,10 +21,10 @@ public class GameService {
 
     public ListGamesResponse listGames(String auth) throws DataAccessException {
         if (new MemoryAuthDAO().getAuth(auth) == null) {
-            new ListGamesResponse(null, false, "invalid authToken");
+            new ListGamesResponse(null, "invalid authToken");
             throw new DataAccessException("Error: unauthorized");
         }
-        return new ListGamesResponse(gameDataArrayList, true, null);
+        return new ListGamesResponse(gameDataArrayList, null);
     }
 
     public CreateGameResponse CreateGame(String gameName, String auth) throws DataAccessException {
@@ -35,7 +35,7 @@ public class GameService {
             throw new DataAccessException("Error: bad request");
         }
         GameData newGame = new MemoryGameDAO().createGame(gameName);
-        return new CreateGameResponse(newGame.gameID(), true, null);
+        return new CreateGameResponse(newGame.gameID(), null);
     }
 
     public JoinGameResponse JoinGame(String playerColor, Integer gameID, String auth) throws DataAccessException {
@@ -54,7 +54,7 @@ public class GameService {
         if (playerColor == null) {
             GameData updatedObserverGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), currentGame);
             new MemoryGameDAO().updateGame(gameID, updatedObserverGame);
-            return new JoinGameResponse(gameID, true, null);
+            return new JoinGameResponse(gameID, null);
         }
         if (ChessGame.TeamColor.valueOf(playerColor) == ChessGame.TeamColor.WHITE) {
             if (new MemoryGameDAO().getGame(gameID).whiteUsername() != null) {
@@ -62,7 +62,7 @@ public class GameService {
             }
             GameData updatedWhiteGame = new GameData(gameID, username, gameData.blackUsername(), gameData.gameName(), currentGame);
             new MemoryGameDAO().updateGame(gameID, updatedWhiteGame);
-            return new JoinGameResponse(gameID, true, null);
+            return new JoinGameResponse(gameID, null);
         }
         else if (ChessGame.TeamColor.valueOf(playerColor) == ChessGame.TeamColor.BLACK) {
             if (new MemoryGameDAO().getGame(gameID).blackUsername() != null) {
@@ -70,7 +70,7 @@ public class GameService {
             }
             GameData updatedBlackGame = new GameData(gameID, gameData.whiteUsername(), username, gameData.gameName(), currentGame);
             new MemoryGameDAO().updateGame(gameID, updatedBlackGame);
-            return new JoinGameResponse(gameID, true, null);
+            return new JoinGameResponse(gameID, null);
         }
         else {
             throw new DataAccessException("Error: bad request");

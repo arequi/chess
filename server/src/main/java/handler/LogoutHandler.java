@@ -22,7 +22,7 @@ public class LogoutHandler implements Route {
         } catch (DataAccessException e) {
             DataAccessException exceptionData = new DataAccessException(e.getMessage());
             System.out.println(exceptionData.getMessage());
-            LogoutResponse logoutResponse = new LogoutResponse( false, "Error: could not log out.");
+            LogoutResponse logoutResponse = new LogoutResponse("Error: could not log out.");
             res.status(401);
             return new Gson().toJson(logoutResponse);
         }

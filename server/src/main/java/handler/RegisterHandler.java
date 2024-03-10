@@ -23,7 +23,7 @@ public class RegisterHandler implements Route {
             res.status(200);
             return new Gson().toJson(registerResponse);
         } catch (DataAccessException e) {
-            RegisterResponse registerResponse = new RegisterResponse(null, null, false, "Error: Person already registered.");
+            RegisterResponse registerResponse = new RegisterResponse(null, null, "Error: Person already registered.");
             DataAccessException exceptionData = new DataAccessException(e.getMessage());
             System.out.println(exceptionData.getMessage());
             if (e.getMessage().equals( "Error: already taken")) {
