@@ -1,37 +1,38 @@
 package service;
 
-import dataAccess.DataAccessException;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryUserDAO;
+import dataAccess.*;
 import model.AuthData;
 import model.UserData;
 import response.LoginResponse;
 import response.LogoutResponse;
 import response.RegisterResponse;
 
+import java.sql.Connection;
+
 
 public class UserService {
+    Connection conn;
 
     public RegisterResponse register(UserData user) throws DataAccessException {
         if (user.username() == null || user.password() == null) {
             throw new DataAccessException("Error: bad request");
         }
-         else if (new MemoryUserDAO().getUser(user.username()) != null) {
+         else if (new SQLUserDAO(conn).getUser(user.username()) != null) {
              throw new DataAccessException("Error: already taken");
         }
-        AuthData authToken = new MemoryAuthDAO().createAuth(user.username());
-        new MemoryUserDAO().createUser(user.username(), user.password(), user.email());
+        AuthData authToken = new SQLAuthDAO(conn).createAuth(user.username());
+        new SQLUserDAO(conn).createUser(user.username(), user.password(), user.email());
         String authString = authToken.authToken();
         return new RegisterResponse(user.username(), authString, null);
     }
 
     public LoginResponse login(UserData user) throws DataAccessException {
-        if (new MemoryUserDAO().getUser(user.username()) == null) {
+        if (new SQLUserDAO(conn).getUser(user.username()) == null) {
             throw new DataAccessException("Error: unauthorized");
         }
-        UserData memoryUser = new MemoryUserDAO().getUser(user.username());
-        if (memoryUser.password().equals(user.password())) {
-            AuthData authToken = new MemoryAuthDAO().createAuth(user.username());
+        UserData sqlUser = new SQLUserDAO(conn).getUser(user.username());
+        if (sqlUser.password().equals(user.password())) {
+            AuthData authToken = new SQLAuthDAO(conn).createAuth(user.username());
             String authString = authToken.authToken();
             return new LoginResponse(user.username(), authString, null);
         }
@@ -40,11 +41,11 @@ public class UserService {
         }
     }
     public LogoutResponse logout(String auth) throws DataAccessException {
-        if (new MemoryAuthDAO().getAuth(auth) == null) {
+        if (new SQLAuthDAO(conn).getAuth(auth) == null) {
             new LogoutResponse("Could not log out. User does not exist");
             throw new DataAccessException("Error: unauthorized");
         }
-            new MemoryAuthDAO().deleteAuth(auth);
+            new SQLAuthDAO(conn).deleteAuth(auth);
             return new LogoutResponse(null);
     }
 

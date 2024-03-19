@@ -45,7 +45,7 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
-    public void updateGame(int gameID, GameData updatedGame) {
+    public void updateGame(int gameID, GameData updatedGame) throws DataAccessException{
         Iterator<GameData> itr = gameDataArrayList.iterator();
         while (itr.hasNext()) {
             data = itr.next();
