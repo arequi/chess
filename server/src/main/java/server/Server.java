@@ -1,5 +1,7 @@
 package server;
 
+import dataAccess.SQLUserDAO;
+import dataAccess.UserDAO;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -9,6 +11,15 @@ import handler.*;
 import java.util.ArrayList;
 
 public class Server {
+    static SQLUserDAO sqlUserDAO;
+
+    // server constructor
+//    public Server () {
+        // try catch block initializing userDAO, game... as SQLUserDAO, etc ...
+        // plus configureDatabase method for each, creating tables if not exist
+//        sqlUserDAO = new SQLUserDAO();
+        // sqlUserDAO.configureDatabase();
+//    }
 
     static final public ArrayList<AuthData> authDataArrayList = new ArrayList<>();
     static final public ArrayList<GameData> gameDataArrayList = new ArrayList<>();

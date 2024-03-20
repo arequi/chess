@@ -5,7 +5,6 @@ import model.GameData;
 
 import java.util.*;
 
-import static java.lang.Math.random;
 import static server.Server.gameDataArrayList;
 
 public class MemoryGameDAO implements GameDAO{
@@ -40,7 +39,7 @@ public class MemoryGameDAO implements GameDAO{
     }
 
     @Override
-    public Collection<GameData> listGames() throws DataAccessException {
+    public ArrayList<GameData> listGames() throws DataAccessException {
         return gameDataArrayList;
     }
 

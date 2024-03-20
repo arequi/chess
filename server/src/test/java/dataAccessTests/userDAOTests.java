@@ -33,8 +33,6 @@ public class userDAOTests {
     @BeforeEach
     public void setUp() throws DataAccessException {
         // Here we can set up any classes or variables we will need for each test
-        // lets create a new instance of the Database class
-        db = new DatabaseManager();
         fakeUsername = "notAUsername";
         realUsername = "sarahggg";
         password = "66381263";
@@ -42,16 +40,13 @@ public class userDAOTests {
         // and a new event with random data
         bestUser = new UserData(realUsername, password, "sng@gmail.com");
         secondBestUser = new UserData(secondRealUsername, "ktu", "76859@gmail.com");
-        // Here, we'll open the connection in preparation for the test case to use it
-        Connection conn = db.databaseName;
-        //Then we pass that connection to the EventDAO, so it can access the database.
-        uDao = new SQLUserDAO(conn);
+        uDao = new SQLUserDAO();
         //Let's clear the database as well so any lingering data doesn't affect our tests
         uDao.clear();
     }
     @Test
-    void clearUserPass() {
-        new SQLUserDAO(conn).createUser("sarahg3545", "bscdsoiuco", "sgona22@byu.edu");
+    void clearUserPass() throws DataAccessException{
+        new SQLUserDAO().createUser("sarahg3545", "bscdsoiuco", "sgona22@byu.edu");
         assertNotNull(userDataArrayList);
         new ClearService().clear();
         assertTrue(userDataArrayList.isEmpty());

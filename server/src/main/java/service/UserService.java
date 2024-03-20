@@ -11,28 +11,26 @@ import java.sql.Connection;
 
 
 public class UserService {
-    Connection conn;
-
     public RegisterResponse register(UserData user) throws DataAccessException {
         if (user.username() == null || user.password() == null) {
             throw new DataAccessException("Error: bad request");
         }
-         else if (new SQLUserDAO(conn).getUser(user.username()) != null) {
+         else if (new SQLUserDAO().getUser(user.username()) != null) {
              throw new DataAccessException("Error: already taken");
         }
-        AuthData authToken = new SQLAuthDAO(conn).createAuth(user.username());
-        new SQLUserDAO(conn).createUser(user.username(), user.password(), user.email());
+        AuthData authToken = new SQLAuthDAO().createAuth(user.username());
+        new SQLUserDAO().createUser(user.username(), user.password(), user.email());
         String authString = authToken.authToken();
         return new RegisterResponse(user.username(), authString, null);
     }
 
     public LoginResponse login(UserData user) throws DataAccessException {
-        if (new SQLUserDAO(conn).getUser(user.username()) == null) {
+        if (new SQLUserDAO().getUser(user.username()) == null) {
             throw new DataAccessException("Error: unauthorized");
         }
-        UserData sqlUser = new SQLUserDAO(conn).getUser(user.username());
+        UserData sqlUser = new SQLUserDAO().getUser(user.username());
         if (sqlUser.password().equals(user.password())) {
-            AuthData authToken = new SQLAuthDAO(conn).createAuth(user.username());
+            AuthData authToken = new SQLAuthDAO().createAuth(user.username());
             String authString = authToken.authToken();
             return new LoginResponse(user.username(), authString, null);
         }
@@ -41,11 +39,11 @@ public class UserService {
         }
     }
     public LogoutResponse logout(String auth) throws DataAccessException {
-        if (new SQLAuthDAO(conn).getAuth(auth) == null) {
+        if (new SQLAuthDAO().getAuth(auth) == null) {
             new LogoutResponse("Could not log out. User does not exist");
             throw new DataAccessException("Error: unauthorized");
         }
-            new SQLAuthDAO(conn).deleteAuth(auth);
+            new SQLAuthDAO().deleteAuth(auth);
             return new LogoutResponse(null);
     }
 

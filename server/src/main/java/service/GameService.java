@@ -1,10 +1,7 @@
 package service;
 
 import chess.ChessGame;
-import dataAccess.DataAccessException;
-import dataAccess.GameDAO;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.MemoryGameDAO;
+import dataAccess.*;
 import model.AuthData;
 import model.GameData;
 import response.CreateGameResponse;
@@ -20,11 +17,11 @@ import static server.Server.gameDataArrayList;
 public class GameService {
 
     public ListGamesResponse listGames(String auth) throws DataAccessException {
-        if (new MemoryAuthDAO().getAuth(auth) == null) {
+        if (new SQLAuthDAO().getAuth(auth) == null) {
             new ListGamesResponse(null, "invalid authToken");
             throw new DataAccessException("Error: unauthorized");
         }
-        return new ListGamesResponse(gameDataArrayList, null);
+        return new ListGamesResponse(new SQLGameDAO().listGames(), null);
     }
 
     public CreateGameResponse CreateGame(String gameName, String auth) throws DataAccessException {

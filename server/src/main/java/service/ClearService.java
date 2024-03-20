@@ -15,9 +15,9 @@ public class ClearService {
      */
 
     public ClearResponse clear() throws DataAccessException{
-        new MemoryUserDAO().clear();
-        new MemoryGameDAO().clear();
-        new MemoryAuthDAO().clear();
+        new SQLUserDAO().clear();
+        new SQLAuthDAO().clear();
+        new SQLGameDAO().clear();
         result = new ClearResponse("Clear succeeded.");
         return result;
     }
