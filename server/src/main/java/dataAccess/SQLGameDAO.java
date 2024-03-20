@@ -31,17 +31,17 @@ public class SQLGameDAO implements GameDAO{
     public GameData createGame(String gameName) throws DataAccessException {
         Random rand = new Random();
         Integer gameID = rand.nextInt(10000) + 1;
-        ChessGame newGame = new ChessGame();
-        GameData data = new GameData(gameID, null, null, gameName, newGame);
+        ChessGame game = new ChessGame();
+        GameData data = new GameData(gameID, null, null, gameName, game);
         String sql = "INSERT INTO Game (gameID, whiteUsername, blackUsername, gameName, game) VALUES(?,?,?,?,?)";
         try (var conn = DatabaseManager.getConnection()) {
             configureDatabase();
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, gameID);
                 stmt.setString(2, null);
-                stmt.setString(3, null);
-                stmt.setString(4, gameName);
-                stmt.setObject(5, newGame);
+                stmt.setObject(3, null);
+                stmt.setObject(4, gameName);
+                stmt.setObject(5, game);
 
                 stmt.executeUpdate();
                 return data;
@@ -98,17 +98,21 @@ public class SQLGameDAO implements GameDAO{
     public void updateGame(int gameID, GameData updatedGame) throws DataAccessException{
         String gameName = updatedGame.gameName();
         ChessGame newGame = updatedGame.game();
+        String whiteUsername = updatedGame.whiteUsername();
+        String blackUsername = updatedGame.blackUsername();
 //        UserData observer = ;
         String sql = "UPDATE Game " +
-                "SET gameName = ?, game = ?, " +
+                "SET whiteUsername = ?, blackUsername = ?, gameName = ?, game = ?" +
 //                "observer = ?" +
                 "WHERE gameID = ?;";
         try (var conn = DatabaseManager.getConnection()) {
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setInt(1, gameID);
-                stmt.setString(2, gameName);
-                stmt.setObject(3, newGame);
-//                stmt.setObject(4, observer);
+                stmt.setString(1, whiteUsername);
+                stmt.setObject(2, blackUsername);
+                stmt.setObject(3, gameName);
+                stmt.setObject(4, newGame);
+                stmt.setInt(5, gameID);
+//                stmt.setObject(6, observer);
 
                 stmt.executeUpdate();
             }
@@ -119,24 +123,21 @@ public class SQLGameDAO implements GameDAO{
     }
 
     void configureDatabase() throws DataAccessException{
-        final String[] createStatements = {
+        final String statement =
                 """
             CREATE TABLE IF NOT EXISTS Game (
               `gameID` int NOT NULL,
-              `whiteUsername` varchar(256) DEFAULT NULL,
-              `blackUsername` varchar(256) DEFAULT NULL,
+              `whiteUsername` varchar(256),
+              `blackUsername` varchar(256),
               `gameName` varchar(256) NOT NULL,
-              `game` blob NOT NULL, 
-              PRIMARY KEY (`gameID`),
+              `game` blob NOT NULL,
+              PRIMARY KEY (`gameID`)
             )
-            """
-        };
+            """;
         try (var conn = DatabaseManager.getConnection()) {
-            for (var statement : createStatements) {
                 try (var preparedStatement = conn.prepareStatement(statement)) {
                     preparedStatement.executeUpdate();
                 }
-            }
         } catch (SQLException ex) {
             throw new DataAccessException("unable to configure Game table");
         }

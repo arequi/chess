@@ -29,13 +29,13 @@ public class SQLAuthDAO implements AuthDAO {
 
     @Override
     public AuthData createAuth(String username) throws DataAccessException {
-        String sql = "INSERT INTO Auth (username, authToken) VALUES(?,?)";
+        String sql = "INSERT INTO Auth (authToken, username) VALUES(?,?)";
         try (var conn = DatabaseManager.getConnection()) {
             configureDatabase();
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 String authToken = UUID.randomUUID().toString();
-                stmt.setString(1, username);
-                stmt.setString(2, authToken);
+                stmt.setString(1, authToken);
+                stmt.setString(2, username);
                 stmt.executeUpdate();
                 return new AuthData(authToken, username);
             }
@@ -54,7 +54,7 @@ public class SQLAuthDAO implements AuthDAO {
                 stmt.setString(1, authToken);
                 rs = stmt.executeQuery();
                 if (rs.next()) {
-                    return new AuthData(rs.getString("username"), rs.getString("authToken"));
+                    return new AuthData(rs.getString("authToken"), rs.getString("username"));
                 } else {
                     return null;
                 }
@@ -80,21 +80,18 @@ public class SQLAuthDAO implements AuthDAO {
     }
 
     void configureDatabase() throws DataAccessException{
-        final String[] createStatements = {
+        final String statement =
                 """
             CREATE TABLE IF NOT EXISTS  Auth (
-              `username` varchar(256) NOT NULL,
               `authToken` varchar(256) NOT NULL,
-              PRIMARY KEY (`authToken`),
+              `username` varchar(256) NOT NULL,
+              PRIMARY KEY (`authToken`)
             )
-            """
-        };
+            """;
             try (var conn = DatabaseManager.getConnection()) {
-                for (var statement : createStatements) {
                     try (var preparedStatement = conn.prepareStatement(statement)) {
                         preparedStatement.executeUpdate();
                     }
-                }
             } catch (SQLException ex) {
                 throw new DataAccessException("unable to configure auth table");
             }

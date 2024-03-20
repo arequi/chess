@@ -25,48 +25,49 @@ public class GameService {
     }
 
     public CreateGameResponse CreateGame(String gameName, String auth) throws DataAccessException {
-        if (new MemoryAuthDAO().getAuth(auth) == null) {
+        if (new SQLAuthDAO().getAuth(auth) == null) {
             throw new DataAccessException("Error: unauthorized");
         }
         if (gameName == null) {
             throw new DataAccessException("Error: bad request");
         }
-        GameData newGame = new MemoryGameDAO().createGame(gameName);
+        GameData newGame = new SQLGameDAO().createGame(gameName);
         return new CreateGameResponse(newGame.gameID(), null);
     }
 
     public JoinGameResponse JoinGame(String playerColor, Integer gameID, String auth) throws DataAccessException {
-        if (new MemoryAuthDAO().getAuth(auth) == null) {
+        if (new SQLAuthDAO().getAuth(auth) == null) {
             throw new DataAccessException("Error: unauthorized");
         }
         if (gameID == null) {
             throw new DataAccessException("Error: bad request");
         }
-        if (new MemoryGameDAO().getGame(gameID) == null) {
+        if (new SQLGameDAO().getGame(gameID) == null) {
             throw new DataAccessException("Error: bad request");
         }
-        String username = (new MemoryAuthDAO().getAuth(auth)).username();
-        GameData gameData = new MemoryGameDAO().getGame(gameID);
+        String username = (new SQLAuthDAO().getAuth(auth)).username();
+        GameData gameData = new SQLGameDAO().getGame(gameID);
         ChessGame currentGame = gameData.game();
         if (playerColor == null) {
-            GameData updatedObserverGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), currentGame);
-            new MemoryGameDAO().updateGame(gameID, updatedObserverGame);
+            GameData updatedObserverGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(),
+                    gameData.gameName(), currentGame);
+            new SQLGameDAO().updateGame(gameID, updatedObserverGame);
             return new JoinGameResponse(gameID, null);
         }
         if (ChessGame.TeamColor.valueOf(playerColor) == ChessGame.TeamColor.WHITE) {
-            if (new MemoryGameDAO().getGame(gameID).whiteUsername() != null) {
+            if (new SQLGameDAO().getGame(gameID).whiteUsername() != null) {
                 throw new DataAccessException("Error: already taken");
             }
             GameData updatedWhiteGame = new GameData(gameID, username, gameData.blackUsername(), gameData.gameName(), currentGame);
-            new MemoryGameDAO().updateGame(gameID, updatedWhiteGame);
+            new SQLGameDAO().updateGame(gameID, updatedWhiteGame);
             return new JoinGameResponse(gameID, null);
         }
         else if (ChessGame.TeamColor.valueOf(playerColor) == ChessGame.TeamColor.BLACK) {
-            if (new MemoryGameDAO().getGame(gameID).blackUsername() != null) {
+            if (new SQLGameDAO().getGame(gameID).blackUsername() != null) {
                 throw new DataAccessException("Error: already taken");
             }
             GameData updatedBlackGame = new GameData(gameID, gameData.whiteUsername(), username, gameData.gameName(), currentGame);
-            new MemoryGameDAO().updateGame(gameID, updatedBlackGame);
+            new SQLGameDAO().updateGame(gameID, updatedBlackGame);
             return new JoinGameResponse(gameID, null);
         }
         else {
