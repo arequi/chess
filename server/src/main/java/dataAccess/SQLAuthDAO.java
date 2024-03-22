@@ -32,6 +32,7 @@ public class SQLAuthDAO implements AuthDAO {
     public AuthData createAuth(String username) throws DataAccessException {
         String sql = "INSERT INTO Auth (authToken, username) VALUES(?,?)";
         try (var conn = DatabaseManager.getConnection()) {
+            DatabaseManager.createDatabase();
             configureDatabase();
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 String authToken = UUID.randomUUID().toString();

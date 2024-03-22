@@ -29,6 +29,7 @@ public class SQLUserDAO implements UserDAO{
     public void createUser(String username, String password, String email) throws DataAccessException {
         String sql = "INSERT INTO User (username, password, email) VALUES(?,?,?)";
         try (var conn = DatabaseManager.getConnection()) {
+            DatabaseManager.createDatabase();
             configureDatabase();
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, username);

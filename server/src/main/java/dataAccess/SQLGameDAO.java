@@ -39,6 +39,7 @@ public class SQLGameDAO implements GameDAO{
         GameData data = new GameData(gameID, null, null, gameName, game, null);
         String sql = "INSERT INTO Game (gameID, whiteUsername, blackUsername, gameName, game, observers) VALUES(?,?,?,?,?,?)";
         try (var conn = DatabaseManager.getConnection()) {
+            DatabaseManager.createDatabase();
             configureDatabase();
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, gameID);
