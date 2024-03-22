@@ -118,7 +118,7 @@ public class SQLGameDAO implements GameDAO{
     }
 
     @Override
-    public void updateGame(int gameID, GameData updatedGame) throws DataAccessException{
+    public void updateGame(Integer gameID, GameData updatedGame) throws DataAccessException{
         String gameName = updatedGame.gameName();
         ChessGame game = updatedGame.game();
         String whiteUsername = updatedGame.whiteUsername();
