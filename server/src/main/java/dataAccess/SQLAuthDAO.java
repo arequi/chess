@@ -15,6 +15,7 @@ public class SQLAuthDAO implements AuthDAO {
 
     @Override
     public void clear() throws DataAccessException {
+        DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
             String sql ="DELETE FROM Auth";
             configureDatabase();

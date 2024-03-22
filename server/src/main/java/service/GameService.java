@@ -2,17 +2,14 @@ package service;
 
 import chess.ChessGame;
 import dataAccess.*;
-import model.AuthData;
 import model.GameData;
+import model.UserData;
 import response.CreateGameResponse;
 import response.JoinGameResponse;
 import response.ListGamesResponse;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
-import static server.Server.authDataArrayList;
-import static server.Server.gameDataArrayList;
 
 public class GameService {
 
@@ -48,9 +45,12 @@ public class GameService {
         String username = (new SQLAuthDAO().getAuth(auth)).username();
         GameData gameData = new SQLGameDAO().getGame(gameID);
         ChessGame currentGame = gameData.game();
+        ArrayList<UserData> observers = gameData.observers();
         if (playerColor == null) {
+            UserData observingUser = new SQLUserDAO().getUser(username);
+            observers.add(observingUser);
             GameData updatedObserverGame = new GameData(gameID, gameData.whiteUsername(), gameData.blackUsername(),
-                    gameData.gameName(), currentGame);
+                    gameData.gameName(), currentGame, observers);
             new SQLGameDAO().updateGame(gameID, updatedObserverGame);
             return new JoinGameResponse(gameID, null);
         }
@@ -58,7 +58,7 @@ public class GameService {
             if (new SQLGameDAO().getGame(gameID).whiteUsername() != null) {
                 throw new DataAccessException("Error: already taken");
             }
-            GameData updatedWhiteGame = new GameData(gameID, username, gameData.blackUsername(), gameData.gameName(), currentGame);
+            GameData updatedWhiteGame = new GameData(gameID, username, gameData.blackUsername(), gameData.gameName(), currentGame, observers);
             new SQLGameDAO().updateGame(gameID, updatedWhiteGame);
             return new JoinGameResponse(gameID, null);
         }
@@ -66,7 +66,7 @@ public class GameService {
             if (new SQLGameDAO().getGame(gameID).blackUsername() != null) {
                 throw new DataAccessException("Error: already taken");
             }
-            GameData updatedBlackGame = new GameData(gameID, gameData.whiteUsername(), username, gameData.gameName(), currentGame);
+            GameData updatedBlackGame = new GameData(gameID, gameData.whiteUsername(), username, gameData.gameName(), currentGame, observers);
             new SQLGameDAO().updateGame(gameID, updatedBlackGame);
             return new JoinGameResponse(gameID, null);
         }

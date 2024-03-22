@@ -1,6 +1,7 @@
 package dataAccess;
 
 import model.UserData;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,12 +10,10 @@ import java.sql.SQLException;
 
 public class SQLUserDAO implements UserDAO{
 
-    Connection conn;
-
-
 
     @Override
     public void clear() throws DataAccessException {
+        DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
             configureDatabase();
             try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM User")) {

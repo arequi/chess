@@ -36,9 +36,9 @@ public class GameServiceTests {
         ChessGame game = new ChessGame();
         ChessGame otherGame = new ChessGame();
         realUser = new UserData("sgonza", "3545", "@byu");
-        realGame = new GameData(1234, "whiteTeam", "blackTeam", "realGame", game);
-        realGame2 = new GameData(3545, null, "blackTeam", "realGame2", game);
-        fakeGame = new GameData(5678, "whiteTeam", "blackTeam", "fakeGame", otherGame);
+        realGame = new GameData(1234, "whiteTeam", "blackTeam", "realGame", game, null);
+        realGame2 = new GameData(3545, null, "blackTeam", "realGame2", game, null);
+        fakeGame = new GameData(5678, "whiteTeam", "blackTeam", "fakeGame", otherGame, null);
         fakeAuth = "i'm fake";
         fakeGameID = 102;
     }

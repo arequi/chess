@@ -3,6 +3,7 @@ package service;
 import dataAccess.*;
 import model.AuthData;
 import model.UserData;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import response.LoginResponse;
 import response.LogoutResponse;
 import response.RegisterResponse;
@@ -19,7 +20,9 @@ public class UserService {
              throw new DataAccessException("Error: already taken");
         }
         AuthData authToken = new SQLAuthDAO().createAuth(user.username());
-        new SQLUserDAO().createUser(user.username(), user.password(), user.email());
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        String hashedPassword = encoder.encode(user.password());
+        new SQLUserDAO().createUser(user.username(), hashedPassword, user.email());
         String authString = authToken.authToken();
         return new RegisterResponse(user.username(), authString, null);
     }
@@ -29,7 +32,8 @@ public class UserService {
             throw new DataAccessException("Error: unauthorized");
         }
         UserData sqlUser = new SQLUserDAO().getUser(user.username());
-        if (sqlUser.password().equals(user.password())) {
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        if (encoder.matches(user.password(), sqlUser.password())) {
             AuthData authToken = new SQLAuthDAO().createAuth(user.username());
             String authString = authToken.authToken();
             return new LoginResponse(user.username(), authString, null);

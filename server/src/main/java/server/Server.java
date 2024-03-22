@@ -1,7 +1,6 @@
 package server;
 
-import dataAccess.SQLUserDAO;
-import dataAccess.UserDAO;
+import dataAccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -11,15 +10,6 @@ import handler.*;
 import java.util.ArrayList;
 
 public class Server {
-    static SQLUserDAO sqlUserDAO;
-
-    // server constructor
-//    public Server () {
-        // try catch block initializing userDAO, game... as SQLUserDAO, etc ...
-        // plus configureDatabase method for each, creating tables if not exist
-//        sqlUserDAO = new SQLUserDAO();
-        // sqlUserDAO.configureDatabase();
-//    }
 
     static final public ArrayList<AuthData> authDataArrayList = new ArrayList<>();
     static final public ArrayList<GameData> gameDataArrayList = new ArrayList<>();
@@ -29,6 +19,7 @@ public class Server {
         Spark.port(desiredPort);
         Spark.staticFiles.location("web");
         createRoutes();
+
         Spark.init();
         Spark.awaitInitialization();
         return Spark.port();

@@ -1,21 +1,24 @@
 package dataAccess;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.reflect.TypeToken;
 import model.GameData;
 import model.UserData;
+import org.eclipse.jetty.server.Authentication;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import javax.xml.crypto.Data;
+import java.lang.reflect.Type;
+import java.sql.*;
 import java.util.*;
 
 public class SQLGameDAO implements GameDAO{
-    Connection conn;
 
 
     @Override
     public void clear() throws DataAccessException {
+        DatabaseManager.createDatabase();
         try (var conn = DatabaseManager.getConnection()) {
             configureDatabase();
             try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM Game")) {
@@ -32,23 +35,25 @@ public class SQLGameDAO implements GameDAO{
         Random rand = new Random();
         Integer gameID = rand.nextInt(10000) + 1;
         ChessGame game = new ChessGame();
-        GameData data = new GameData(gameID, null, null, gameName, game);
-        String sql = "INSERT INTO Game (gameID, whiteUsername, blackUsername, gameName, game) VALUES(?,?,?,?,?)";
+        ArrayList<UserData> observers = new ArrayList<>();
+        GameData data = new GameData(gameID, null, null, gameName, game, null);
+        String sql = "INSERT INTO Game (gameID, whiteUsername, blackUsername, gameName, game, observers) VALUES(?,?,?,?,?,?)";
         try (var conn = DatabaseManager.getConnection()) {
             configureDatabase();
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setInt(1, gameID);
                 stmt.setString(2, null);
-                stmt.setObject(3, null);
-                stmt.setObject(4, gameName);
-                stmt.setObject(5, game);
+                stmt.setString(3, null);
+                stmt.setString(4, gameName);
+                stmt.setObject(5, new Gson().toJson(game));
+                stmt.setObject(6, new Gson().toJson(observers));
 
                 stmt.executeUpdate();
                 return data;
             }
         }catch (SQLException e) {
             e.printStackTrace();
-            throw new DataAccessException("Error encountered while inserting a game into the database");
+            throw new DataAccessException("Error encountered while creating a game into the database");
         }
     }
 
@@ -58,11 +63,23 @@ public class SQLGameDAO implements GameDAO{
         String sql = "SELECT * FROM Game WHERE gameID = ?;";
         try (var conn = DatabaseManager.getConnection()) {
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, String.valueOf(gameID));
+                stmt.setInt(1, gameID);
                 rs = stmt.executeQuery();
                 if (rs.next()) {
+                    String observerString = rs.getString("observers");
+                    Type listOfObservers = new TypeToken<ArrayList<UserData>>() {}.getType();
+                    var serializer = new Gson();
+
+                    ArrayList<UserData> observers;
+                    if (observerString.isEmpty()) {
+                        observers = null;
+                    }
+                    else {
+                        observers = serializer.fromJson(observerString, listOfObservers);
+                    }
+                    ChessGame game = serializer.fromJson((String) rs.getObject("game"), ChessGame.class);
                     return new GameData(rs.getInt("gameID"), rs.getString("whiteUsername"),
-                            rs.getString("blackUsername"), rs.getString("gameName"), (ChessGame) rs.getObject("game"));
+                            rs.getString("blackUsername"), rs.getString("gameName"), game, observers);
                 } else {
                     return null;
                 }
@@ -83,8 +100,13 @@ public class SQLGameDAO implements GameDAO{
                 ArrayList<GameData> gameArray = new ArrayList<>();
                 rs = stmt.executeQuery();
                 while (rs.next()) {
+                    String observerString = rs.getString("observers");
+                    Type listOfObservers = new TypeToken<ArrayList<UserData>>() {}.getType();
+                    var serializer = new Gson();
+                    ArrayList<UserData> observers = serializer.fromJson(String.valueOf(observerString), listOfObservers);
+                    ChessGame game = serializer.fromJson((String) rs.getObject("game"), ChessGame.class);
                     gameArray.add(new GameData(rs.getInt("gameID"), rs.getString("whiteUsername"),
-                            rs.getString("blackUsername"), rs.getString("gameName"), (ChessGame) rs.getObject("game")));
+                            rs.getString("blackUsername"), rs.getString("gameName"), game, observers));
                 }
                 return gameArray;
             }
@@ -97,22 +119,22 @@ public class SQLGameDAO implements GameDAO{
     @Override
     public void updateGame(int gameID, GameData updatedGame) throws DataAccessException{
         String gameName = updatedGame.gameName();
-        ChessGame newGame = updatedGame.game();
+        ChessGame game = updatedGame.game();
         String whiteUsername = updatedGame.whiteUsername();
         String blackUsername = updatedGame.blackUsername();
-//        UserData observer = ;
+        ArrayList<UserData> observers = updatedGame.observers();
         String sql = "UPDATE Game " +
-                "SET whiteUsername = ?, blackUsername = ?, gameName = ?, game = ?" +
-//                "observer = ?" +
+                "SET whiteUsername = ?, blackUsername = ?, gameName = ?, game = ?," +
+                "observers = ?" +
                 "WHERE gameID = ?;";
         try (var conn = DatabaseManager.getConnection()) {
             try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                 stmt.setString(1, whiteUsername);
-                stmt.setObject(2, blackUsername);
-                stmt.setObject(3, gameName);
-                stmt.setObject(4, newGame);
-                stmt.setInt(5, gameID);
-//                stmt.setObject(6, observer);
+                stmt.setString(2, blackUsername);
+                stmt.setString(3, gameName);
+                stmt.setObject(4, new Gson().toJson(game));
+                stmt.setObject(5, new Gson().toJson(observers));
+                stmt.setInt(6, gameID);
 
                 stmt.executeUpdate();
             }
@@ -130,7 +152,8 @@ public class SQLGameDAO implements GameDAO{
               `whiteUsername` varchar(256),
               `blackUsername` varchar(256),
               `gameName` varchar(256) NOT NULL,
-              `game` blob NOT NULL,
+              `game` text NOT NULL,
+              `observers` Blob,
               PRIMARY KEY (`gameID`)
             )
             """;

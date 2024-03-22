@@ -20,8 +20,8 @@ public class MemoryGameDAO implements GameDAO{
     public GameData createGame(String gameName) throws DataAccessException {
         Random rand = new Random();
         int gameID = rand.nextInt(10000) + 1;
-        ChessGame newGame = new ChessGame();
-        GameData data = new GameData(gameID, null, null, gameName, newGame);
+        ChessGame game = new ChessGame();
+        GameData data = new GameData(gameID, null, null, gameName, game, null);
         gameDataArrayList.add(data);
         return data;
     }
