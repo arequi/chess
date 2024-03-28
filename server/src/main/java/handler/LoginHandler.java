@@ -2,9 +2,8 @@ package handler;
 
 import com.google.gson.Gson;
 import model.UserData;
-import request.LoginRequest;
-import response.LoginResponse;
-import response.RegisterResponse;
+import model.request.LoginRequest;
+import model.response.LoginResponse;
 import service.UserService;
 import spark.Request;
 import spark.Response;

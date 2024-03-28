@@ -2,19 +2,12 @@ package handler;
 
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
-import model.AuthData;
-import model.UserData;
-import request.ListGamesRequest;
-import request.LoginRequest;
-import response.ListGamesResponse;
-import response.LoginResponse;
+import model.response.ListGamesResponse;
 import service.GameService;
-import service.UserService;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 
-import java.util.List;
 import java.util.Map;
 
 public class ListGamesHandler implements Route  {

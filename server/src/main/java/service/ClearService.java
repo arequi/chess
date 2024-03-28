@@ -1,6 +1,6 @@
 package service;
 
-import response.ClearResponse;
+import model.response.ClearResponse;
 import dataAccess.*;
 
 public class ClearService {

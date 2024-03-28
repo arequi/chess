@@ -2,15 +2,13 @@ package serviceTests;
 
 import chess.ChessGame;
 import dataAccess.*;
-import model.AuthData;
 import model.GameData;
 import model.UserData;
-import org.eclipse.jetty.server.Authentication;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import response.CreateGameResponse;
-import response.JoinGameResponse;
-import response.RegisterResponse;
+import model.response.CreateGameResponse;
+import model.response.JoinGameResponse;
+import model.response.RegisterResponse;
 import service.ClearService;
 import service.GameService;
 import service.UserService;

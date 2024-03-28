@@ -1,12 +1,9 @@
 package handler;
 
-import chess.ChessGame;
 import com.google.gson.Gson;
 import dataAccess.DataAccessException;
-import request.CreateGameRequest;
-import request.JoinGameRequest;
-import response.CreateGameResponse;
-import response.JoinGameResponse;
+import model.request.JoinGameRequest;
+import model.response.JoinGameResponse;
 import service.GameService;
 import spark.Request;
 import spark.Response;

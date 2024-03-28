@@ -4,9 +4,9 @@ import chess.ChessGame;
 import dataAccess.*;
 import model.GameData;
 import model.UserData;
-import response.CreateGameResponse;
-import response.JoinGameResponse;
-import response.ListGamesResponse;
+import model.response.CreateGameResponse;
+import model.response.JoinGameResponse;
+import model.response.ListGamesResponse;
 
 import java.util.ArrayList;
 

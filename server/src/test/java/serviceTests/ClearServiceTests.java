@@ -2,12 +2,8 @@ package serviceTests;
 
 import dataAccess.DataAccessException;
 import dataAccess.MemoryUserDAO;
-import model.UserData;
 import org.junit.jupiter.api.Test;
-import response.ClearResponse;
 import service.ClearService;
-
-import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static server.Server.userDataArrayList;

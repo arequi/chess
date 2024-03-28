@@ -4,11 +4,9 @@ import dataAccess.*;
 import model.AuthData;
 import model.UserData;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import response.LoginResponse;
-import response.LogoutResponse;
-import response.RegisterResponse;
-
-import java.sql.Connection;
+import model.response.LoginResponse;
+import model.response.LogoutResponse;
+import model.response.RegisterResponse;
 
 
 public class UserService {
