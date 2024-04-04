@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import dataAccess.*;
 import model.GameData;
@@ -32,7 +33,7 @@ public class GameService {
         return new CreateGameResponse(newGame.gameID(), null);
     }
 
-    public JoinGameResponse JoinGame(String playerColor, Integer gameID, String auth) throws DataAccessException {
+    public JoinGameResponse JoinGame(Integer gameID, String playerColor, String auth) throws DataAccessException {
         if (new SQLAuthDAO().getAuth(auth) == null) {
             throw new DataAccessException("Error: unauthorized");
         }
@@ -54,7 +55,7 @@ public class GameService {
             new SQLGameDAO().updateGame(gameID, updatedObserverGame);
             return new JoinGameResponse(gameID, null);
         }
-        if (ChessGame.TeamColor.valueOf(playerColor) == ChessGame.TeamColor.WHITE) {
+        if (playerColor.equalsIgnoreCase((ChessGame.TeamColor.WHITE).name())) {
             if (new SQLGameDAO().getGame(gameID).whiteUsername() != null) {
                 throw new DataAccessException("Error: already taken");
             }
@@ -62,7 +63,7 @@ public class GameService {
             new SQLGameDAO().updateGame(gameID, updatedWhiteGame);
             return new JoinGameResponse(gameID, null);
         }
-        else if (ChessGame.TeamColor.valueOf(playerColor) == ChessGame.TeamColor.BLACK) {
+        else if (playerColor.equalsIgnoreCase(ChessGame.TeamColor.BLACK.name())) {
             if (new SQLGameDAO().getGame(gameID).blackUsername() != null) {
                 throw new DataAccessException("Error: already taken");
             }

@@ -1,7 +1,11 @@
 package ui;
 
+import model.response.LoginResponse;
+import model.response.RegisterResponse;
+
 import java.net.URI;
 import java.net.URL;
+import java.sql.PreparedStatement;
 import java.util.Arrays;
 
 import static ui.EscapeSequences.*;
@@ -18,29 +22,25 @@ public class PreLoginUI {
     }
 
     public String eval(String input) {
-//        try {
+        try {
             var tokens = input.toLowerCase().split(" ");
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
-//                case "signin" -> signIn(params);
-//                case "rescue" -> rescuePet(params);
-//                case "list" -> listPets();
-//                case "signout" -> signOut();
-//                case "adopt" -> adoptPet(params);
-//                case "adoptall" -> adoptAllPets();
-//                case "quit" -> "quit";
+                case "register" -> register(params);
+                case "login" -> login(params);
+                case "quit" -> "quit";
                 default -> displayHelp();
             };
-//        }
-//        catch (ResponseException ex) {
-//            return ex.getMessage();
-//        }
+        }
+        catch (ResponseException ex) {
+            return ex.getMessage();
+        }
     }
 
     public String displayHelp () {
         String helpString =
-                "register <USERNAME> <PASSWORD> <EMAIL>" + SET_TEXT_COLOR_MAGENTA + " - to create an account"
+                " register <USERNAME> <PASSWORD> <EMAIL>" + SET_TEXT_COLOR_MAGENTA + " - to create an account"
                 + SET_TEXT_COLOR_BLUE + "\n login <USERNAME> <PASSWORD>" + SET_TEXT_COLOR_MAGENTA + " - to play chess"
                 + SET_TEXT_COLOR_BLUE + "\n quit" +  SET_TEXT_COLOR_MAGENTA + " - playing chess"
                 + SET_TEXT_COLOR_BLUE + "\n help" + SET_TEXT_COLOR_MAGENTA + " - with possible commands";
@@ -49,17 +49,32 @@ public class PreLoginUI {
 
     }
 
-    public void quitProgram () {
-
+    public String login (String... params) throws ResponseException {
+        LoginResponse response = server.login(params);
+        if (params.length >= 1) {
+            if (response.message() == null) {
+                return "Successfully logged in";
+            }
+        }
+        throw new ResponseException(401, "Incorrect username or password. Try again");
     }
 
-    public void login () {
-        // set state to logged in
-
-    }
-
-    public void register () {
-
+    public String register (String... params) throws ResponseException {
+        RegisterResponse response = server.register(params);
+        if (params.length >= 1) {
+            if (response.message() == null) {
+                return "Successfully registered.";
+            }
+        }
+        if (response.message().equals("Error: already taken")) {
+            throw new ResponseException(403, "Username is already registered.");
+        }
+        else if (response.message().equals("Error: bad request")) {
+            throw new ResponseException(400, "Expected: <username> <password> <email>");
+        }
+        else {
+            throw new ResponseException(500, "Error unknown.");
+        }
     }
 
 

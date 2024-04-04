@@ -1,19 +1,15 @@
 package ui;
 
-import com.sun.nio.sctp.HandlerResult;
-import com.sun.nio.sctp.Notification;
-import com.sun.nio.sctp.NotificationHandler;
-
 import java.util.Scanner;
+import java.util.TreeMap;
 
 import static ui.EscapeSequences.*;
+import static ui.ServerFacade.gameIDs;
 
 public class Repl {
-    private final State state = State.LOGGED_OUT;
+    public static State state;
     private final PreLoginUI preLogin;
     private final PostLoginUI postLogin;
-    private final String loggedOutString = "[LOGGED_OUT]";
-    private final String loggedInString = "[LOGGED_IN]";
 
     public Repl(String serverUrl) {
         preLogin = new PreLoginUI(serverUrl);
@@ -25,26 +21,24 @@ public class Repl {
     public void run () {
         Scanner scanner = new Scanner(System.in);
         var result = "";
+        state = State.LOGGED_OUT;
         while (!result.equals("quit")) {
             printPrompt(); // waiting for user input
             String line = scanner.nextLine(); // take in user input, store in line
             try {
-                result = preLogin.eval(line);
-                System.out.print("\n" + SET_TEXT_COLOR_BLUE + result);
+                if (state == State.LOGGED_OUT) {
+                    result = preLogin.eval(line);
+                }
+                else {
+                    result = postLogin.eval(line);
+                }
+                System.out.print(SET_TEXT_COLOR_BLUE + result + "\n");
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);
             }
         }
         System.out.println();
-//        if (state == State.LOGGED_OUT) {
-//            // TODO: go to prelogin
-//            System.out.println(preLogin.displayHelp());
-//
-//        }
-//        else {
-//            // TODO: go to postlogin
-//        }
     }
 
     private void printPrompt() {

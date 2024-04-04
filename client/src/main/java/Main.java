@@ -14,9 +14,7 @@ public class Main {
         }
 
         System.out.println("Started test HTTP server on " + port);
-        System.out.println("♕ Welcome to 240 chess. Type Help to get started. ♕");
+        System.out.println("\n ♕ Welcome to 240 chess. Type Help to get started. ♕");
         new Repl(serverUrl).run();
-//        var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
-//        System.out.println("♕ 240 Chess Client: " + piece);
     }
 }

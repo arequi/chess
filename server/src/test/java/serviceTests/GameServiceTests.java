@@ -87,7 +87,7 @@ public class GameServiceTests {
         RegisterResponse result = new UserService().register(realUser);
         realAuth = result.authToken();
         CreateGameResponse newGame = new GameService().CreateGame("mygame", realAuth);
-        JoinGameResponse joinGameResponse = new GameService().JoinGame("WHITE", newGame.gameID(), realAuth);
+        JoinGameResponse joinGameResponse = new GameService().JoinGame(newGame.gameID(), "WHITE", realAuth);
         assertEquals(new MemoryGameDAO().getGame(joinGameResponse.gameID()).whiteUsername(), realUser.username());
     }
 
@@ -96,6 +96,6 @@ public class GameServiceTests {
         RegisterResponse result = new UserService().register(realUser);
         realAuth = result.authToken();
         new GameService().CreateGame("mygame", realAuth);
-        assertThrows(DataAccessException.class, ()->new GameService().JoinGame("WHOTE", fakeGameID, realAuth));
+        assertThrows(DataAccessException.class, ()->new GameService().JoinGame(fakeGameID, "WHOTE", realAuth));
     }
 }
