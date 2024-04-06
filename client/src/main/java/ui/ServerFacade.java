@@ -88,7 +88,11 @@ public class ServerFacade {
         String playerColor = params[1];
         int gameID = gameIDs.get(gameNum);
         JoinGameRequest request = new JoinGameRequest(gameID, playerColor);
-        return this.makeRequest("PUT", "/game", request, JoinGameResponse.class);
+        JoinGameResponse response = this.makeRequest("PUT", "/game", request, JoinGameResponse.class);
+//        if (response.message() == null) {
+//            // print message including username and which side he/she joined as
+//        }
+        return response;
     }
 
     public JoinGameResponse observeGame (String... params) throws ResponseException {
