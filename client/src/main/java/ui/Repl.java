@@ -39,6 +39,10 @@ public class Repl implements NotificationHandler {
                     result = postLogin.eval(line);
                 }
                 System.out.print(SET_TEXT_COLOR_BLUE + result + "\n");
+                if (result.contains("joined") || result.contains("observing")) {
+                    result = gameplayUI.eval(line);
+                    System.out.print(SET_TEXT_COLOR_BLUE + result + "\n");
+                }
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);

@@ -109,6 +109,7 @@ public class PostLoginUI {
             playerColor = ChessGame.TeamColor.BLACK;
         }
         if (response.message() == null) {
+
             ws = new WebSocketFacade(serverUrl, notificationHandler);
             // TODO: replace with real authToken
             ws.joinPlayer("hi", gameNum, playerColor);

@@ -22,9 +22,11 @@ public class GameplayUI {
             var cmd = (tokens.length > 0) ? tokens[0] : "help";
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
-                case "register" -> register(params);
-                case "login" -> login(params);
-                case "quit" -> "quit";
+                case "highlight" -> highlight(params);
+                case "redraw" -> redraw(params);
+                case "move" -> move();
+                case "resign" -> resign();
+                case "leave" -> leave();
                 default -> displayHelp();
             };
         }
@@ -35,16 +37,17 @@ public class GameplayUI {
 
     public String displayHelp () {
         String helpString =
-                " register <USERNAME> <PASSWORD> <EMAIL>" + SET_TEXT_COLOR_MAGENTA + " - to create an account"
-                        + SET_TEXT_COLOR_BLUE + "\n login <USERNAME> <PASSWORD>" + SET_TEXT_COLOR_MAGENTA + " - to play chess"
-                        + SET_TEXT_COLOR_BLUE + "\n quit" +  SET_TEXT_COLOR_MAGENTA + " - playing chess"
+                " highlight" + SET_TEXT_COLOR_MAGENTA + " - legal moves"
+                        + SET_TEXT_COLOR_BLUE + "\n redraw" + SET_TEXT_COLOR_MAGENTA + " - chessboard"
+                        + SET_TEXT_COLOR_BLUE + "\n move" +  SET_TEXT_COLOR_MAGENTA + " - a chess piece"
+                        + SET_TEXT_COLOR_BLUE + "\n resign" + SET_TEXT_COLOR_MAGENTA + " - from game"
+                        + SET_TEXT_COLOR_BLUE + "\n leave" +  SET_TEXT_COLOR_MAGENTA + " - game"
                         + SET_TEXT_COLOR_BLUE + "\n help" + SET_TEXT_COLOR_MAGENTA + " - with possible commands";
 
         return helpString;
-
     }
 
-    public String login (String... params) throws ResponseException {
+    public String highlight (String... params) throws ResponseException {
         LoginResponse response = server.login(params);
         if (params.length >= 1) {
             if (response.message() == null) {
@@ -54,7 +57,61 @@ public class GameplayUI {
         throw new ResponseException(401, "Incorrect username or password. Try again");
     }
 
-    public String register (String... params) throws ResponseException {
+    public String redraw (String... params) throws ResponseException {
+        RegisterResponse response = server.register(params);
+        if (params.length >= 1) {
+            if (response.message() == null) {
+                return "Successfully registered.";
+            }
+        }
+        if (response.message().equals("Error: already taken")) {
+            throw new ResponseException(403, "Username is already registered.");
+        }
+        else if (response.message().equals("Error: bad request")) {
+            throw new ResponseException(400, "Expected: <username> <password> <email>");
+        }
+        else {
+            throw new ResponseException(500, "Error unknown.");
+        }
+    }
+
+    public String move (String... params) throws ResponseException {
+        RegisterResponse response = server.register(params);
+        if (params.length >= 1) {
+            if (response.message() == null) {
+                return "Successfully registered.";
+            }
+        }
+        if (response.message().equals("Error: already taken")) {
+            throw new ResponseException(403, "Username is already registered.");
+        }
+        else if (response.message().equals("Error: bad request")) {
+            throw new ResponseException(400, "Expected: <username> <password> <email>");
+        }
+        else {
+            throw new ResponseException(500, "Error unknown.");
+        }
+    }
+
+    public String resign (String... params) throws ResponseException {
+        RegisterResponse response = server.register(params);
+        if (params.length >= 1) {
+            if (response.message() == null) {
+                return "Successfully registered.";
+            }
+        }
+        if (response.message().equals("Error: already taken")) {
+            throw new ResponseException(403, "Username is already registered.");
+        }
+        else if (response.message().equals("Error: bad request")) {
+            throw new ResponseException(400, "Expected: <username> <password> <email>");
+        }
+        else {
+            throw new ResponseException(500, "Error unknown.");
+        }
+    }
+
+    public String leave (String... params) throws ResponseException {
         RegisterResponse response = server.register(params);
         if (params.length >= 1) {
             if (response.message() == null) {

@@ -13,6 +13,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -21,9 +23,11 @@ public class ServerFacade {
     private final String serverUrl;
     private static AuthData authToken;
     public static SortedMap<Integer, Integer> gameIDs;
+    public static Map<String, String> authTokens;
 
     public ServerFacade(String url) {
         serverUrl = url;
+        authTokens = new TreeMap<>();
     }
 
 
@@ -36,6 +40,7 @@ public class ServerFacade {
         RegisterRequest request = new RegisterRequest(username, password, email);
         RegisterResponse response = this.makeRequest("POST", "/user", request, RegisterResponse.class);
         authToken = new AuthData(response.authToken(), response.username());
+        authTokens.put(authToken.authToken(), "Player " + authTokens.size()+1);
         if (response.message() == null) {
             Repl.state = State.LOGGED_IN;
         }
@@ -49,6 +54,7 @@ public class ServerFacade {
         LoginRequest request = new LoginRequest(username, password);
         LoginResponse response = this.makeRequest("POST", "/session", request, LoginResponse.class);
         authToken = new AuthData(response.authToken(), response.username());
+        authTokens.put(authToken.authToken(), "Player " + authTokens.size()+1);
         if (response.message() == null) {
             Repl.state = State.LOGGED_IN;
         }
@@ -60,6 +66,7 @@ public class ServerFacade {
         if (response.message() == null) {
            Repl.state = State.LOGGED_OUT;
         }
+        authTokens.remove(authToken.authToken());
         return response;
     }
 
