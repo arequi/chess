@@ -83,25 +83,17 @@ public class ServerFacade {
         return this.makeRequest("GET", "/game", null, ListGamesResponse.class);
     }
 
-    public JoinGameResponse joinGame (String... params) throws ResponseException {
-        int gameNum = Integer.parseInt(params[0]);
-        String playerColor = params[1];
+    public JoinGameResponse joinGame (Integer gameNum, String playerColor) throws ResponseException {
         int gameID = gameIDs.get(gameNum);
         JoinGameRequest request = new JoinGameRequest(gameID, playerColor);
-        JoinGameResponse response = this.makeRequest("PUT", "/game", request, JoinGameResponse.class);
-//        if (response.message() == null) {
-//            // print message including username and which side he/she joined as
-//        }
-        return response;
+        return this.makeRequest("PUT", "/game", request, JoinGameResponse.class);
     }
 
-    public JoinGameResponse observeGame (String... params) throws ResponseException {
-        int gameNum = Integer.parseInt(params[0]);
+    public JoinGameResponse observeGame (Integer gameNum) throws ResponseException {
         int gameID = gameIDs.get(gameNum);
         JoinGameRequest request = new JoinGameRequest(gameID, null);
         return this.makeRequest("PUT", "/game", request, JoinGameResponse.class);
     }
-
 
     public <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws ResponseException {
         try {

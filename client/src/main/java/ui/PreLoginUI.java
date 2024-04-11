@@ -2,6 +2,7 @@ package ui;
 
 import model.response.LoginResponse;
 import model.response.RegisterResponse;
+import ui.websocket.NotificationHandler;
 
 import java.net.URI;
 import java.net.URL;
@@ -12,13 +13,10 @@ import static ui.EscapeSequences.*;
 
 public class PreLoginUI {
 
-    private final String serverUrl;
     private final ServerFacade server;
-    private State state = State.LOGGED_OUT;
 
-    public PreLoginUI(String serverUrl) {
+    public PreLoginUI(String serverUrl, NotificationHandler notificationHandler) {
         server = new ServerFacade(serverUrl);
-        this.serverUrl = serverUrl;
     }
 
     public String eval(String input) {

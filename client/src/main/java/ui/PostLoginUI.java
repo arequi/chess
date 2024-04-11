@@ -1,10 +1,14 @@
 package ui;
 
+import chess.ChessGame;
 import model.GameData;
 import model.response.CreateGameResponse;
 import model.response.JoinGameResponse;
 import model.response.ListGamesResponse;
 import model.response.LogoutResponse;
+import ui.websocket.NotificationHandler;
+import ui.websocket.WebSocketFacade;
+import webSocketMessages.serverMessages.Notification;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -14,14 +18,17 @@ import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.BLACK_BISHOP;
 
 public class PostLoginUI {
-    private final String serverUrl;
     private final ServerFacade server;
     private static final int BOARD_SIZE_IN_SQUARES = 8;
     private static int numberTracker;
+    private WebSocketFacade ws;
+    private String serverUrl;
+    private NotificationHandler notificationHandler;
 
-    public PostLoginUI(String serverUrl) {
+    public PostLoginUI(String serverUrl, NotificationHandler notificationHandler) {
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
+        this.notificationHandler = notificationHandler;
     }
 
     public String eval(String input) {
@@ -91,8 +98,20 @@ public class PostLoginUI {
     }
 
     public String joinGame (String... params) throws ResponseException {
-        JoinGameResponse response = server.joinGame(params);
+        int gameNum = Integer.parseInt(params[0]);
+        String playerColorString = params[1];
+        ChessGame.TeamColor playerColor;
+        JoinGameResponse response = server.joinGame(gameNum, playerColorString);
+        if (playerColorString.equalsIgnoreCase("white")) {
+            playerColor = ChessGame.TeamColor.WHITE;
+        }
+        else {
+            playerColor = ChessGame.TeamColor.BLACK;
+        }
         if (response.message() == null) {
+            ws = new WebSocketFacade(serverUrl, notificationHandler);
+            // TODO: replace with real authToken
+            ws.joinPlayer("hi", gameNum, playerColor);
             displayBoard("white");
             displayBoard("black");
             return "Successfully joined game.";
@@ -112,8 +131,12 @@ public class PostLoginUI {
     }
 
     public String joinObserver (String... params) throws ResponseException {
-        JoinGameResponse response = server.observeGame(params);
+        int gameNum = Integer.parseInt(params[0]);
+        JoinGameResponse response = server.observeGame(gameNum);
         if (response.message() == null) {
+            ws = new WebSocketFacade(serverUrl, notificationHandler);
+            // TODO: replace with real authToken
+            ws.joinObserver("hi", gameNum);
             displayBoard("white");
             displayBoard("black");
             return "Successfully observing game.";

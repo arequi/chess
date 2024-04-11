@@ -145,7 +145,7 @@ public class ServerFacadeTests {
         serverFacade.register(username, password, email);
         serverFacade.createGame("realGameName");
         String playerColor = "BLACK";
-        JoinGameResponse response = serverFacade.joinGame(String.valueOf(1), playerColor);
+        JoinGameResponse response = serverFacade.joinGame(1, playerColor);
         System.out.println("response(gameID): " + response.gameID());
         System.out.println("gameIDs map: " + gameIDs);
         assertNull(response.message());
@@ -154,7 +154,7 @@ public class ServerFacadeTests {
     @Test
     public void joinGameFail() throws ResponseException {
         String playerColor = "BLACK";
-        assertThrows(Exception.class, ()-> serverFacade.joinGame(String.valueOf(1)), playerColor);
+        assertThrows(Exception.class, ()-> serverFacade.joinGame(1, playerColor));
     }
 
     @Test
@@ -164,14 +164,14 @@ public class ServerFacadeTests {
         String email = "@byu";
         serverFacade.register(username, password, email);
         serverFacade.createGame("realGameName");
-        JoinGameResponse response = serverFacade.observeGame(String.valueOf(1));
+        JoinGameResponse response = serverFacade.observeGame(1);
         assertNull(response.message());
     }
 
     @Test
     public void observeGameFail() throws ResponseException {
         int gameID = 1213;
-        assertThrows(Exception.class, ()-> serverFacade.joinGame(String.valueOf(gameID)));
+        assertThrows(Exception.class, ()-> serverFacade.observeGame(gameID));
     }
 
 }

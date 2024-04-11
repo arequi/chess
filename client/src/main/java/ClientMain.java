@@ -1,11 +1,9 @@
-import chess.*;
 import ui.Repl;
-import ui.ServerFacade;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-public class Main {
+public class ClientMain {
     public static void main(String[] args) throws URISyntaxException, IOException {
         var port = 8080;
         String serverUrl = "http://localhost:" + port;

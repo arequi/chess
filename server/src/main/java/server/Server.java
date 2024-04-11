@@ -4,20 +4,26 @@ import dataAccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import server.webSocket.WebSocketHandler;
 import spark.*;
 import handler.*;
 
 import java.util.ArrayList;
-
 public class Server {
 
     static final public ArrayList<AuthData> authDataArrayList = new ArrayList<>();
     static final public ArrayList<GameData> gameDataArrayList = new ArrayList<>();
     static final public ArrayList<UserData> userDataArrayList = new ArrayList<>();
+    private final WebSocketHandler webSocketHandler;
+
+    public Server () {
+        webSocketHandler = new WebSocketHandler();
+    }
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
         Spark.staticFiles.location("web");
+        Spark.webSocket("/connect", webSocketHandler);
         createRoutes();
 
         Spark.init();
