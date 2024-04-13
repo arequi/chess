@@ -109,11 +109,9 @@ public class PostLoginUI {
             Repl.state = IN_GAME;
             if (playerColorString.equalsIgnoreCase("white")) {
                 playerColor = ChessGame.TeamColor.WHITE;
-                displayBoard("white");
             }
             else {
                 playerColor = ChessGame.TeamColor.BLACK;
-                displayBoard("black");
             }
             ws = new WebSocketFacade(serverUrl, notificationHandler);
             ws.joinPlayer(PreLoginUI.authToken, gameNum, playerColor);

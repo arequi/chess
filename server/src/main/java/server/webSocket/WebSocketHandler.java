@@ -2,11 +2,9 @@ package server.webSocket;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import dataAccess.AuthDAO;
-import dataAccess.DataAccessException;
-import dataAccess.SQLAuthDAO;
-import dataAccess.SQLUserDAO;
+import dataAccess.*;
 import model.AuthData;
+import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
@@ -28,6 +26,12 @@ public class WebSocketHandler {
     public void onMessage(Session session, String message) throws Exception {
         UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
         Connection conn = connections.getConnection(command.getAuthString(), session);
+        if (conn == null) {
+            if (new SQLAuthDAO().getAuth(command.getAuthString()) != null) {
+                connections.add(command.getAuthString(), session);
+            }
+        }
+        conn = connections.getConnection(command.getAuthString(), session);
         if (conn != null) {
             switch (command.getCommandType()) {
                 // LOAD_GAME to root client and NOTIFICATION to everyone else
@@ -47,14 +51,8 @@ public class WebSocketHandler {
             }
         }
         else {
-            if (new SQLAuthDAO().getAuth(command.getAuthString()) != null) {
-                connections.add(command.getAuthString(), session);
-            }
-            else {
-                connections.sendError("error: user not found.", session);
-            }
+            connections.sendError("error: user not found.", session);
         }
-
     }
 
     public void joinPlayer(UserGameCommand command, Connection conn, Session session) throws Exception {

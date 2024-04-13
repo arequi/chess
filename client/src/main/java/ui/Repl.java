@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import ui.websocket.NotificationHandler;
 import ui.websocket.WebSocketFacade;
@@ -53,8 +54,7 @@ public class Repl implements NotificationHandler{
             }
         }
         System.out.println();
-        // TODO: where does this go?
-        while (true) ws.send(scanner.nextLine());
+        ws.send(scanner.nextLine());
     }
 
     private void printPrompt() {
@@ -71,14 +71,14 @@ public class Repl implements NotificationHandler{
     }
 
     private void displayNotification (String notificationMessage) {
-
+        System.out.println(notificationMessage);
     }
 
     private void sendError (String errorMessage) {
-
+        System.out.println(errorMessage);
     }
 
     private void loadGame (ChessGame game) {
-
+        PostLoginUI.displayBoard(game.getTeamTurn().name());
     }
 }

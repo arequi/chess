@@ -1,6 +1,7 @@
 package webSocketMessages.serverMessages;
 
 import chess.ChessGame;
+import model.GameData;
 
 public class LoadGameMessage extends ServerMessage {
     ChessGame game;
