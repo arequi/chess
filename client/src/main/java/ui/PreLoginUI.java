@@ -14,6 +14,7 @@ import static ui.EscapeSequences.*;
 public class PreLoginUI {
 
     private final ServerFacade server;
+    public static String authToken;
 
     public PreLoginUI(String serverUrl, NotificationHandler notificationHandler) {
         server = new ServerFacade(serverUrl);
@@ -49,6 +50,7 @@ public class PreLoginUI {
 
     public String login (String... params) throws ResponseException {
         LoginResponse response = server.login(params);
+        authToken = response.authToken();
         if (params.length >= 1) {
             if (response.message() == null) {
                 return "Successfully logged in";
@@ -59,6 +61,7 @@ public class PreLoginUI {
 
     public String register (String... params) throws ResponseException {
         RegisterResponse response = server.register(params);
+        authToken = response.authToken();
         if (params.length >= 1) {
             if (response.message() == null) {
                 return "Successfully registered.";

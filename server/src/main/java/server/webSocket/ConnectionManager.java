@@ -4,6 +4,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import webSocketMessages.serverMessages.ServerMessage;
 
 import java.io.IOException;
+import java.lang.invoke.ConstantBootstraps;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,6 +15,14 @@ public class ConnectionManager {
         var connection = new Connection(authToken, session);
         connections.put(authToken, connection);
     }
+    public Connection getConnection(String authToken, Session session) {
+        if (connections.containsKey(authToken)) {
+            if (connections.get(authToken).session.equals(session)) {
+                return connections.get(authToken);
+            }
+        }
+        return null;
+    }
 
     public void remove(String authToken) {
         connections.remove(authToken);
@@ -21,19 +30,47 @@ public class ConnectionManager {
 
     public void broadcast(String excludeAuthToken, ServerMessage serverMessage) throws IOException {
         var removeList = new ArrayList<Connection>();
-        for (var c : connections.values()) {
-            if (c.session.isOpen()) {
-                if (!c.authToken.equals(excludeAuthToken)) {
-                    c.send(serverMessage.toString());
+        if (serverMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.LOAD_GAME)) {
+            for (var c : connections.values()) {
+                if (c.session.isOpen()) {
+                    if (c.authToken.equals(excludeAuthToken)) {
+                        c.send(serverMessage.toString());
+                    }
+                } else {
+                    removeList.add(c);
                 }
-            } else {
-                removeList.add(c);
+            }
+        }
+        else if (serverMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.NOTIFICATION)) {
+            for (var c : connections.values()) {
+                if (c.session.isOpen()) {
+                    if (!c.authToken.equals(excludeAuthToken)) {
+                        c.send(serverMessage.toString());
+                    }
+                } else {
+                    removeList.add(c);
+                }
+            }
+        }
+        // ERROR type
+        else {
+            for (var c : connections.values()) {
+                if (c.session.isOpen()) {
+                    if (c.authToken.equals(excludeAuthToken)) {
+                        c.send(serverMessage.toString());
+                    }
+                } else {
+                    removeList.add(c);
+                }
+            }
+        }
+            // Clean up any connections that were left open.
+            for (var c : removeList) {
+                connections.remove(c.authToken);
             }
         }
 
-        // Clean up any connections that were left open.
-        for (var c : removeList) {
-            connections.remove(c.authToken);
+        public void sendError(String msg, Session session) throws IOException {
+            session.getRemote().sendString(msg);
         }
     }
-}

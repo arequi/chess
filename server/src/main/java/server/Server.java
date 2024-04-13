@@ -4,6 +4,7 @@ import dataAccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
+import server.webSocket.Connection;
 import server.webSocket.WebSocketHandler;
 import spark.*;
 import handler.*;

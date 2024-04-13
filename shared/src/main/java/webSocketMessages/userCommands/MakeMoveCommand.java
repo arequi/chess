@@ -1,7 +1,7 @@
 package webSocketMessages.userCommands;
 
-public class MakeMove extends UserGameCommand{
-    public MakeMove(String authToken) {
+public class MakeMoveCommand extends UserGameCommand{
+    public MakeMoveCommand(String authToken) {
         super(authToken);
         this.commandType = CommandType.MAKE_MOVE;
     }

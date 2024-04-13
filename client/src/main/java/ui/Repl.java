@@ -1,31 +1,36 @@
 package ui;
 
-import org.w3c.dom.Node;
+import chess.ChessGame;
 import ui.websocket.NotificationHandler;
-import webSocketMessages.serverMessages.Notification;
+import ui.websocket.WebSocketFacade;
+import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.LoadGameMessage;
+import webSocketMessages.serverMessages.NotificationMessage;
+import webSocketMessages.serverMessages.ServerMessage;
 
 import java.util.Scanner;
-import java.util.TreeMap;
 
 import static ui.EscapeSequences.*;
-import static ui.ServerFacade.gameIDs;
 
-public class Repl implements NotificationHandler {
+public class Repl implements NotificationHandler{
     public static State state;
     private final PreLoginUI preLogin;
     private final PostLoginUI postLogin;
     private final GameplayUI gameplayUI;
+    private String serverUrl;
 
-    public Repl(String serverUrl) {
+    public Repl(String serverUrl){
+        this.serverUrl = serverUrl;
         preLogin = new PreLoginUI(serverUrl, this);
         postLogin = new PostLoginUI(serverUrl, this);
-        gameplayUI = new GameplayUI(serverUrl,this);
+        gameplayUI = new GameplayUI(serverUrl, this);
     }
 
 
     // command line text
-    public void run () {
+    public void run () throws Exception {
         Scanner scanner = new Scanner(System.in);
+        var ws = new WebSocketFacade(serverUrl, this);
         var result = "";
         state = State.LOGGED_OUT;
         while (!result.equals("quit")) {
@@ -35,20 +40,21 @@ public class Repl implements NotificationHandler {
                 if (state == State.LOGGED_OUT) {
                     result = preLogin.eval(line);
                 }
-                else {
+                else if (state == State.LOGGED_IN) {
                     result = postLogin.eval(line);
                 }
-                System.out.print(SET_TEXT_COLOR_BLUE + result + "\n");
-                if (result.contains("joined") || result.contains("observing")) {
+                else {
                     result = gameplayUI.eval(line);
-                    System.out.print(SET_TEXT_COLOR_BLUE + result + "\n");
                 }
+                System.out.print(SET_TEXT_COLOR_BLUE + result + "\n");
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.print(msg);
             }
         }
         System.out.println();
+        // TODO: where does this go?
+        while (true) ws.send(scanner.nextLine());
     }
 
     private void printPrompt() {
@@ -56,8 +62,23 @@ public class Repl implements NotificationHandler {
     }
 
     @Override
-    public void notify(Notification notification) {
-        System.out.println(SET_TEXT_COLOR_RED + notification);
-        printPrompt();
+    public void notify(ServerMessage message) {
+        switch (message.getServerMessageType()) {
+            case NOTIFICATION -> displayNotification(((NotificationMessage) message).getMessage());
+            case ERROR -> sendError(((ErrorMessage) message).getErrorMessage());
+            case LOAD_GAME -> loadGame(((LoadGameMessage) message).getGame());
+        }
+    }
+
+    private void displayNotification (String notificationMessage) {
+
+    }
+
+    private void sendError (String errorMessage) {
+
+    }
+
+    private void loadGame (ChessGame game) {
+
     }
 }

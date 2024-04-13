@@ -1,14 +1,16 @@
 package ui;
 
 import chess.ChessGame;
-import model.GameData;
 import model.response.CreateGameResponse;
 import model.response.JoinGameResponse;
 import model.response.ListGamesResponse;
 import model.response.LogoutResponse;
 import ui.websocket.NotificationHandler;
 import ui.websocket.WebSocketFacade;
-import webSocketMessages.serverMessages.Notification;
+import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.LoadGameMessage;
+import webSocketMessages.serverMessages.NotificationMessage;
+import webSocketMessages.serverMessages.ServerMessage;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -16,6 +18,7 @@ import java.util.Arrays;
 
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.BLACK_BISHOP;
+import static ui.State.*;
 
 public class PostLoginUI {
     private final ServerFacade server;
@@ -102,19 +105,18 @@ public class PostLoginUI {
         String playerColorString = params[1];
         ChessGame.TeamColor playerColor;
         JoinGameResponse response = server.joinGame(gameNum, playerColorString);
-        if (playerColorString.equalsIgnoreCase("white")) {
-            playerColor = ChessGame.TeamColor.WHITE;
-        }
-        else {
-            playerColor = ChessGame.TeamColor.BLACK;
-        }
         if (response.message() == null) {
-
+            Repl.state = IN_GAME;
+            if (playerColorString.equalsIgnoreCase("white")) {
+                playerColor = ChessGame.TeamColor.WHITE;
+                displayBoard("white");
+            }
+            else {
+                playerColor = ChessGame.TeamColor.BLACK;
+                displayBoard("black");
+            }
             ws = new WebSocketFacade(serverUrl, notificationHandler);
-            // TODO: replace with real authToken
-            ws.joinPlayer("hi", gameNum, playerColor);
-            displayBoard("white");
-            displayBoard("black");
+            ws.joinPlayer(PreLoginUI.authToken, gameNum, playerColor);
             return "Successfully joined game.";
         }
         if (response.message().equals("Error: unauthorized")) {
@@ -135,11 +137,8 @@ public class PostLoginUI {
         int gameNum = Integer.parseInt(params[0]);
         JoinGameResponse response = server.observeGame(gameNum);
         if (response.message() == null) {
-            ws = new WebSocketFacade(serverUrl, notificationHandler);
-            // TODO: replace with real authToken
-            ws.joinObserver("hi", gameNum);
+            Repl.state = IN_GAME;
             displayBoard("white");
-            displayBoard("black");
             return "Successfully observing game.";
         }
         if (response.message().equals("Error: unauthorized")) {
@@ -327,6 +326,7 @@ public class PostLoginUI {
             }
         }
     }
+
 }
 
 

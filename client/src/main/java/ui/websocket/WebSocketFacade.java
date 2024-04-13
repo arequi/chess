@@ -2,6 +2,7 @@ package ui.websocket;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import ui.Repl;
 import ui.ResponseException;
 
 import javax.websocket.*;
@@ -9,9 +10,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import webSocketMessages.serverMessages.Notification;
-import webSocketMessages.userCommands.JoinObserver;
-import webSocketMessages.userCommands.JoinPlayer;
+import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.NotificationMessage;
+import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.JoinObserverCommand;
+import webSocketMessages.userCommands.JoinPlayerCommand;
 import webSocketMessages.userCommands.UserGameCommand;
 
 //need to extend Endpoint for websocket to work properly
@@ -20,13 +23,11 @@ public class WebSocketFacade extends Endpoint {
     Session session;
     NotificationHandler notificationHandler;
 
-
     public WebSocketFacade(String url, NotificationHandler notificationHandler) throws ResponseException {
         try {
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/connect");
             this.notificationHandler = notificationHandler;
-
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
 
@@ -34,8 +35,12 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    Notification notification = new Gson().fromJson(message, Notification.class);
-                    notificationHandler.notify(notification);
+                    try {
+                        ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+                        notificationHandler.notify(serverMessage);
+                    } catch (Exception ex){
+                        notificationHandler.notify(new ErrorMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
+                    }
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
@@ -54,7 +59,7 @@ public class WebSocketFacade extends Endpoint {
 
     public void joinPlayer(String authToken, Integer gameID, ChessGame.TeamColor playerColor) throws ResponseException {
         try {
-            var command = new JoinPlayer(authToken, gameID, playerColor);
+            var command = new JoinPlayerCommand(authToken, gameID, playerColor);
             send(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
@@ -65,7 +70,7 @@ public class WebSocketFacade extends Endpoint {
 
     public void joinObserver(String authToken, Integer gameID) throws ResponseException {
         try {
-            var command = new JoinObserver("hi", gameID);
+            var command = new JoinObserverCommand("hi", gameID);
             send(new Gson().toJson(command));
             this.session.close();
         } catch (IOException ex) {

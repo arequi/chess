@@ -8,6 +8,7 @@ import java.util.Arrays;
 
 import static ui.EscapeSequences.SET_TEXT_COLOR_BLUE;
 import static ui.EscapeSequences.SET_TEXT_COLOR_MAGENTA;
+import static ui.PostLoginUI.displayBoard;
 
 public class GameplayUI {
     private final ServerFacade server;
@@ -24,8 +25,8 @@ public class GameplayUI {
             return switch (cmd) {
                 case "highlight" -> highlight(params);
                 case "redraw" -> redraw(params);
-                case "move" -> move();
-                case "resign" -> resign();
+                case "move" -> move(params);
+                case "resign" -> resign(params);
                 case "leave" -> leave();
                 default -> displayHelp();
             };
@@ -38,7 +39,7 @@ public class GameplayUI {
     public String displayHelp () {
         String helpString =
                 " highlight" + SET_TEXT_COLOR_MAGENTA + " - legal moves"
-                        + SET_TEXT_COLOR_BLUE + "\n redraw" + SET_TEXT_COLOR_MAGENTA + " - chessboard"
+                        + SET_TEXT_COLOR_BLUE + "\n redraw <WHITE|BLACK|OBSERVER>" + SET_TEXT_COLOR_MAGENTA + " - chessboard"
                         + SET_TEXT_COLOR_BLUE + "\n move" +  SET_TEXT_COLOR_MAGENTA + " - a chess piece"
                         + SET_TEXT_COLOR_BLUE + "\n resign" + SET_TEXT_COLOR_MAGENTA + " - from game"
                         + SET_TEXT_COLOR_BLUE + "\n leave" +  SET_TEXT_COLOR_MAGENTA + " - game"
@@ -48,85 +49,38 @@ public class GameplayUI {
     }
 
     public String highlight (String... params) throws ResponseException {
-        LoginResponse response = server.login(params);
-        if (params.length >= 1) {
-            if (response.message() == null) {
-                return "Successfully logged in";
-            }
-        }
-        throw new ResponseException(401, "Incorrect username or password. Try again");
+        return "Successfully Highlighted moves";
     }
 
     public String redraw (String... params) throws ResponseException {
-        RegisterResponse response = server.register(params);
-        if (params.length >= 1) {
-            if (response.message() == null) {
-                return "Successfully registered.";
-            }
+        if (params[0] == null) {
+            throw new ResponseException(400, "Error, Expected: <WHITE|BLACK|OBSERVER>");
         }
-        if (response.message().equals("Error: already taken")) {
-            throw new ResponseException(403, "Username is already registered.");
+        String color = params[0];
+        if (color.equalsIgnoreCase("black")) {
+            displayBoard("black");
         }
-        else if (response.message().equals("Error: bad request")) {
-            throw new ResponseException(400, "Expected: <username> <password> <email>");
+        else if (color.equalsIgnoreCase("white") || color.equalsIgnoreCase("observer")) {
+            displayBoard("white");
         }
         else {
-            throw new ResponseException(500, "Error unknown.");
+            throw new ResponseException(400, "Error, Expected: <WHITE|BLACK|OBSERVER>");
         }
+        return "Current board displayed";
     }
 
     public String move (String... params) throws ResponseException {
-        RegisterResponse response = server.register(params);
-        if (params.length >= 1) {
-            if (response.message() == null) {
-                return "Successfully registered.";
-            }
-        }
-        if (response.message().equals("Error: already taken")) {
-            throw new ResponseException(403, "Username is already registered.");
-        }
-        else if (response.message().equals("Error: bad request")) {
-            throw new ResponseException(400, "Expected: <username> <password> <email>");
-        }
-        else {
-            throw new ResponseException(500, "Error unknown.");
-        }
+        return "Successfully made a move";
     }
 
     public String resign (String... params) throws ResponseException {
-        RegisterResponse response = server.register(params);
-        if (params.length >= 1) {
-            if (response.message() == null) {
-                return "Successfully registered.";
-            }
-        }
-        if (response.message().equals("Error: already taken")) {
-            throw new ResponseException(403, "Username is already registered.");
-        }
-        else if (response.message().equals("Error: bad request")) {
-            throw new ResponseException(400, "Expected: <username> <password> <email>");
-        }
-        else {
-            throw new ResponseException(500, "Error unknown.");
-        }
+        Repl.state = State.LOGGED_IN;
+        return "Successfully resigned";
     }
 
-    public String leave (String... params) throws ResponseException {
-        RegisterResponse response = server.register(params);
-        if (params.length >= 1) {
-            if (response.message() == null) {
-                return "Successfully registered.";
-            }
-        }
-        if (response.message().equals("Error: already taken")) {
-            throw new ResponseException(403, "Username is already registered.");
-        }
-        else if (response.message().equals("Error: bad request")) {
-            throw new ResponseException(400, "Expected: <username> <password> <email>");
-        }
-        else {
-            throw new ResponseException(500, "Error unknown.");
-        }
+    public String leave () throws ResponseException {
+        Repl.state = State.LOGGED_IN;
+        return "Successfully Left Game";
     }
 
 
