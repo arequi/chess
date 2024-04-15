@@ -13,7 +13,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.*;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -48,7 +47,6 @@ public class ServerFacade {
     }
 
     public LoginResponse login(String... params) throws ResponseException {
-        gameIDs = new TreeMap<>();
         String username = params[0];
         String password = params[1];
         LoginRequest request = new LoginRequest(username, password);

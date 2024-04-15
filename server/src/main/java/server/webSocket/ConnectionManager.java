@@ -1,5 +1,6 @@
 package server.webSocket;
 
+import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import webSocketMessages.serverMessages.ServerMessage;
 
@@ -34,7 +35,7 @@ public class ConnectionManager {
             for (var c : connections.values()) {
                 if (c.session.isOpen()) {
                     if (c.authToken.equals(excludeAuthToken)) {
-                        c.send(serverMessage.toString());
+                        c.send(new Gson().toJson(serverMessage));
                     }
                 } else {
                     removeList.add(c);
@@ -45,7 +46,7 @@ public class ConnectionManager {
             for (var c : connections.values()) {
                 if (c.session.isOpen()) {
                     if (!c.authToken.equals(excludeAuthToken)) {
-                        c.send(serverMessage.toString());
+                        c.send(new Gson().toJson(serverMessage));
                     }
                 } else {
                     removeList.add(c);
@@ -57,7 +58,7 @@ public class ConnectionManager {
             for (var c : connections.values()) {
                 if (c.session.isOpen()) {
                     if (c.authToken.equals(excludeAuthToken)) {
-                        c.send(serverMessage.toString());
+                        c.send(new Gson().toJson(serverMessage));
                     }
                 } else {
                     removeList.add(c);
@@ -69,6 +70,23 @@ public class ConnectionManager {
                 connections.remove(c.authToken);
             }
         }
+
+    public void broadcastMakeMoveLoadGame(ServerMessage serverMessage) throws IOException {
+        var removeList = new ArrayList<Connection>();
+        if (serverMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.LOAD_GAME)) {
+            for (var c : connections.values()) {
+                if (c.session.isOpen()) {
+                    c.send(new Gson().toJson(serverMessage));
+                } else {
+                    removeList.add(c);
+                }
+            }
+        }
+        // Clean up any connections that were left open.
+        for (var c : removeList) {
+            connections.remove(c.authToken);
+        }
+    }
 
         public void sendError(String msg, Session session) throws IOException {
             session.getRemote().sendString(msg);

@@ -1,12 +1,12 @@
 package ui;
 
-import chess.ChessBoard;
 import chess.ChessGame;
+import com.google.gson.Gson;
 import ui.websocket.NotificationHandler;
 import ui.websocket.WebSocketFacade;
-import webSocketMessages.serverMessages.ErrorMessage;
-import webSocketMessages.serverMessages.LoadGameMessage;
-import webSocketMessages.serverMessages.NotificationMessage;
+import webSocketMessages.serverMessages.Error;
+import webSocketMessages.serverMessages.LoadGame;
+import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
 
 import java.util.Scanner;
@@ -17,8 +17,9 @@ public class Repl implements NotificationHandler{
     public static State state;
     private final PreLoginUI preLogin;
     private final PostLoginUI postLogin;
-    private final GameplayUI gameplayUI;
-    private String serverUrl;
+    private GameplayUI gameplayUI;
+    private final String serverUrl;
+    public static ChessGame currentGame;
 
     public Repl(String serverUrl){
         this.serverUrl = serverUrl;
@@ -31,7 +32,6 @@ public class Repl implements NotificationHandler{
     // command line text
     public void run () throws Exception {
         Scanner scanner = new Scanner(System.in);
-        var ws = new WebSocketFacade(serverUrl, this);
         var result = "";
         state = State.LOGGED_OUT;
         while (!result.equals("quit")) {
@@ -54,7 +54,6 @@ public class Repl implements NotificationHandler{
             }
         }
         System.out.println();
-        ws.send(scanner.nextLine());
     }
 
     private void printPrompt() {
@@ -64,9 +63,9 @@ public class Repl implements NotificationHandler{
     @Override
     public void notify(ServerMessage message) {
         switch (message.getServerMessageType()) {
-            case NOTIFICATION -> displayNotification(((NotificationMessage) message).getMessage());
-            case ERROR -> sendError(((ErrorMessage) message).getErrorMessage());
-            case LOAD_GAME -> loadGame(((LoadGameMessage) message).getGame());
+            case NOTIFICATION -> displayNotification(((Notification) message).getMessage());
+            case ERROR -> sendError(((Error) message).getErrorMessage());
+            case LOAD_GAME -> loadGame(((LoadGame) message).getGame());
         }
     }
 
@@ -79,6 +78,7 @@ public class Repl implements NotificationHandler{
     }
 
     private void loadGame (ChessGame game) {
-        PostLoginUI.displayBoard(game.getTeamTurn().name());
+        currentGame = game;
+        PostLoginUI.displayBoard(game.getTeamTurn().name(), game.getBoard());
     }
 }

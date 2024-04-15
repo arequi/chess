@@ -111,9 +111,6 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        // TODO: replace this method with moves that don't leave
-        //  your own king in check or put your king in check
-        // TODO: possibly need to clone board
         movesCollection = new HashSet<>();
         if (board.getPiece(startPosition) == null) {
             return null;

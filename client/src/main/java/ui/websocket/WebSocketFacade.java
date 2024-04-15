@@ -1,8 +1,8 @@
 package ui.websocket;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
-import ui.Repl;
 import ui.ResponseException;
 
 import javax.websocket.*;
@@ -10,11 +10,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import webSocketMessages.serverMessages.ErrorMessage;
-import webSocketMessages.serverMessages.NotificationMessage;
+import webSocketMessages.serverMessages.Error;
+import webSocketMessages.serverMessages.LoadGame;
+import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.JoinObserverCommand;
-import webSocketMessages.userCommands.JoinPlayerCommand;
+import webSocketMessages.userCommands.JoinObserver;
+import webSocketMessages.userCommands.JoinPlayer;
+import webSocketMessages.userCommands.MakeMove;
 import webSocketMessages.userCommands.UserGameCommand;
 
 //need to extend Endpoint for websocket to work properly
@@ -30,16 +32,26 @@ public class WebSocketFacade extends Endpoint {
             this.notificationHandler = notificationHandler;
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
-
             //set message handler
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
                     try {
                         ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-                        notificationHandler.notify(serverMessage);
+                        if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
+                            LoadGame loadGame = new Gson().fromJson(message, LoadGame.class);
+                            notificationHandler.notify(loadGame);
+                        }
+                        else if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
+                            Notification notification = new Gson().fromJson(message, Notification.class);
+                            notificationHandler.notify(notification);
+                        }
+                        else {
+                            Error errorMessage = new Gson().fromJson(message, Error.class);
+                            notificationHandler.notify(errorMessage);
+                        }
                     } catch (Exception ex){
-                        notificationHandler.notify(new ErrorMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
+                        notificationHandler.notify(new Error(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
                     }
                 }
             });
@@ -59,7 +71,7 @@ public class WebSocketFacade extends Endpoint {
 
     public void joinPlayer(String authToken, Integer gameID, ChessGame.TeamColor playerColor) throws ResponseException {
         try {
-            var command = new JoinPlayerCommand(authToken, gameID, playerColor);
+            var command = new JoinPlayer(authToken, gameID, playerColor);
             send(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
@@ -70,9 +82,8 @@ public class WebSocketFacade extends Endpoint {
 
     public void joinObserver(String authToken, Integer gameID) throws ResponseException {
         try {
-            var command = new JoinObserverCommand("hi", gameID);
+            var command = new JoinObserver(authToken, gameID);
             send(new Gson().toJson(command));
-            this.session.close();
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         } catch (Exception e) {
@@ -80,11 +91,10 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    public void makeMove(String authToken) throws ResponseException {
+    public void makeMove(String authToken, Integer gameID, ChessMove move) throws ResponseException {
         try {
-            var command = new UserGameCommand(authToken);
+            var command = new MakeMove(authToken, gameID, move);
             send(new Gson().toJson(command));
-            this.session.close();
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         } catch (Exception e) {
@@ -96,7 +106,6 @@ public class WebSocketFacade extends Endpoint {
         try {
             var command = new UserGameCommand(authToken);
             send(new Gson().toJson(command));
-            this.session.close();
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         } catch (Exception e) {
@@ -109,7 +118,6 @@ public class WebSocketFacade extends Endpoint {
         try {
             var command = new UserGameCommand(authToken);
             send(new Gson().toJson(command));
-            this.session.close();
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
         } catch (Exception e) {

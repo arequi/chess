@@ -1,15 +1,4 @@
-import chess.ChessGame;
 import ui.Repl;
-import ui.websocket.NotificationHandler;
-import ui.websocket.WebSocketFacade;
-import webSocketMessages.serverMessages.ErrorMessage;
-import webSocketMessages.serverMessages.LoadGameMessage;
-import webSocketMessages.serverMessages.NotificationMessage;
-import webSocketMessages.serverMessages.ServerMessage;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Scanner;
 
 public class ClientMain {
     public static void main(String[] args) throws Exception {

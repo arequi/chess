@@ -1,16 +1,19 @@
 package ui;
 
+import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
+import com.google.gson.Gson;
+import model.UserData;
 import model.response.CreateGameResponse;
 import model.response.JoinGameResponse;
 import model.response.ListGamesResponse;
 import model.response.LogoutResponse;
 import ui.websocket.NotificationHandler;
 import ui.websocket.WebSocketFacade;
-import webSocketMessages.serverMessages.ErrorMessage;
-import webSocketMessages.serverMessages.LoadGameMessage;
-import webSocketMessages.serverMessages.NotificationMessage;
-import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.JoinPlayer;
+import webSocketMessages.userCommands.UserGameCommand;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -23,10 +26,12 @@ import static ui.State.*;
 public class PostLoginUI {
     private final ServerFacade server;
     private static final int BOARD_SIZE_IN_SQUARES = 8;
-    private static int numberTracker;
+    private static int rowTracker;
+    private static int columnTracker;
     private WebSocketFacade ws;
     private String serverUrl;
     private NotificationHandler notificationHandler;
+    public static Integer currentGameID;
 
     public PostLoginUI(String serverUrl, NotificationHandler notificationHandler) {
         server = new ServerFacade(serverUrl);
@@ -51,6 +56,8 @@ public class PostLoginUI {
         }
         catch (ResponseException ex) {
             return ex.getMessage();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -100,11 +107,12 @@ public class PostLoginUI {
         throw new ResponseException(401, "unauthorized");
     }
 
-    public String joinGame (String... params) throws ResponseException {
+    public String joinGame (String... params) throws Exception {
         int gameNum = Integer.parseInt(params[0]);
         String playerColorString = params[1];
         ChessGame.TeamColor playerColor;
         JoinGameResponse response = server.joinGame(gameNum, playerColorString);
+        currentGameID = ServerFacade.gameIDs.get(gameNum);
         if (response.message() == null) {
             Repl.state = IN_GAME;
             if (playerColorString.equalsIgnoreCase("white")) {
@@ -114,7 +122,9 @@ public class PostLoginUI {
                 playerColor = ChessGame.TeamColor.BLACK;
             }
             ws = new WebSocketFacade(serverUrl, notificationHandler);
-            ws.joinPlayer(PreLoginUI.authToken, gameNum, playerColor);
+            Integer gameID = ServerFacade.gameIDs.get(gameNum);
+            ws.joinPlayer(PreLoginUI.authToken, gameID, playerColor);
+
             return "Successfully joined game.";
         }
         if (response.message().equals("Error: unauthorized")) {
@@ -136,7 +146,10 @@ public class PostLoginUI {
         JoinGameResponse response = server.observeGame(gameNum);
         if (response.message() == null) {
             Repl.state = IN_GAME;
-            displayBoard("white");
+            ws = new WebSocketFacade(serverUrl, notificationHandler);
+            Integer gameID = ServerFacade.gameIDs.get(gameNum);
+            currentGameID = gameID;
+            ws.joinObserver(PreLoginUI.authToken, gameID);
             return "Successfully observing game.";
         }
         if (response.message().equals("Error: unauthorized")) {
@@ -153,11 +166,12 @@ public class PostLoginUI {
         }
     }
 
-    public static void displayBoard(String boardColor) {
+    public static void displayBoard(String boardColor, ChessBoard currentBoard) {
+        System.out.println();
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
         drawHeaders(out);
-        drawChessBoard(out, boardColor);
+        drawChessBoard(out, boardColor, currentBoard);
         setBlack(out);
         out.println(EMPTY.repeat(10));
         out.print(SET_BG_COLOR_ORIGINAL);
@@ -180,111 +194,61 @@ public class PostLoginUI {
         out.print(SET_TEXT_COLOR_WHITE);
         out.print(text);
     }
-    private static void drawChessBoard(PrintStream out, String boardColor) {
-        numberTracker = 0;
-//        for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES/2; ++boardRow) {
-            drawRowOfSquares(out, boardColor);
-//        }
+    private static void drawChessBoard(PrintStream out, String boardColor, ChessBoard currentBoard) {
+        drawSquares(out, boardColor, currentBoard);
         setGrey(out);
         out.print(EMPTY.repeat(21) + " ");
         setBlack(out);
         out.println();
     }
-    private static void drawRowOfSquares(PrintStream out, String boardColor) {
+    private static void drawSquares(PrintStream out, String boardColor, ChessBoard currentBoard) {
         String[] sideHeaders = {" 1 ", " 2 ", " 3 ", " 4 ", " 5 " , " 6 " ," 7 "," 8 " };
-        for (int squareRow = 0; squareRow < BOARD_SIZE_IN_SQUARES/2; ++squareRow) {
+        rowTracker = 0;
+        boolean islightSquare = true;
+        for (int i = 0; i < 8; i++) {
             setGrey(out);
-            printHeaderText(out, sideHeaders[numberTracker]);
-            numberTracker++;
-            if (boardColor.equals("white")) {
-                if (numberTracker == 1) {
-                    drawOddRow(out, "black", false);
+            printHeaderText(out, sideHeaders[rowTracker]);
+            rowTracker++;
+            columnTracker = 0;
+            for (int j = 0; j < 8; j++) {
+                columnTracker++;
+                ChessPosition position;
+                // white on bottom (how real life chess game starts)
+                if (boardColor.equalsIgnoreCase("white") || boardColor.equalsIgnoreCase("observer")) {
+                    position = new ChessPosition(7-i+1, 7-j+1);
                 }
-                else if (numberTracker == 7) {
-                    drawOddRow(out, "white", true);
+                // black on bottom (how ChessBoard class resets normally)
+                else {
+                    position = new ChessPosition(i+1, j+1);
+                }
+
+                ChessPiece piece = currentBoard.getPiece(position);
+                if (islightSquare) {
+                    setLightGrey(out);
                 }
                 else {
-                    drawOddRow(out, null, false);
+                    setMagenta(out);
                 }
-            }
-            else if (boardColor.equals("black")) {
-                if (numberTracker == 1) {
-                    drawOddRow(out, "white", false);
-                }
-                else if (numberTracker == 7) {
-                    drawOddRow(out, "black", true);
+                if (piece == null) {
+                    printBlankSpace(out);
                 }
                 else {
-                    drawOddRow(out, null, false);
+                    printPlayer(out, piece);
                 }
-            }
-            setGrey(out);
-            printHeaderText(out, sideHeaders[numberTracker]);
-            numberTracker++;
-            if (boardColor.equals("white")) {
-                if (numberTracker == 2) {
-                    drawEvenRow(out, "black", true);
-                }
-                else if (numberTracker == 8) {
-                    drawEvenRow(out, "white", false);
+                if (columnTracker != 8) {
+                    islightSquare = !islightSquare;
                 }
                 else {
-                    drawEvenRow(out, null, false);
-                }
-            }
-            else if (boardColor.equals("black")) {
-                if (numberTracker == 2) {
-                    drawEvenRow(out, "white", true);
-                }
-                else if (numberTracker == 8) {
-                    drawEvenRow(out, "black", false);
-                }
-                else {
-                    drawEvenRow(out, null, false);
+                    setGrey(out);
+                    out.print(" " + EMPTY + " ");
+                    setBlack(out);
+                    out.println();
                 }
             }
         }
     }
-    private static void drawOddRow (PrintStream out, String pieceColor, boolean isPawn) {
-        for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES/2; ++boardCol) {
-            if (pieceColor == null) {
-                setMagenta(out);
-                out.print(" " + EMPTY + " ");
-                setLightGrey(out);
-                out.print(" " + EMPTY + " ");
-            }
-            else {
-                setMagenta(out);
-                printPlayer(out, pieceColor, isPawn, (boardCol*2));
-                setLightGrey(out);
-                printPlayer(out, pieceColor, isPawn, (boardCol*2)+1);
-            }
-        }
-        setGrey(out);
-        out.print(" " + EMPTY + " ");
-        setBlack(out);
-        out.println();
-    }
-    private static void drawEvenRow(PrintStream out, String pieceColor, boolean isPawn) {
-        for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES/2; ++boardCol) {
-            if (pieceColor == null) {
-                setLightGrey(out);
-                out.print(" " + EMPTY + " ");
-                setMagenta(out);
-                out.print(" " + EMPTY + " ");
-            }
-            else {
-                setLightGrey(out);
-                printPlayer(out, pieceColor, isPawn, (boardCol*2));
-                setMagenta(out);
-                printPlayer(out, pieceColor, isPawn, (boardCol*2)+1);
-            }
-        }
-        setGrey(out);
-        out.print(" " + EMPTY + " ");
-        setBlack(out);
-        out.println();
-    }
+
+
     private static void setBlack(PrintStream out) {
         out.print(SET_BG_COLOR_BLACK);
         out.print(SET_TEXT_COLOR_BLACK);
@@ -301,28 +265,68 @@ public class PostLoginUI {
         out.print(SET_TEXT_COLOR_DARK_GREY);
         out.print(SET_BG_COLOR_DARK_GREY);
     }
-    private static void printPlayer(PrintStream out, String pieceColor, boolean isPawn, int column) {
-        String[] whitePieces = {WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_KING, WHITE_QUEEN, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK};
-        String[] blackPieces = {BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_KING, BLACK_QUEEN, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK};
-        out.print(SET_TEXT_COLOR_BLACK);
-        if (pieceColor.equals("white")) {
-            out.print(SET_TEXT_COLOR_WHITE);
-            if (isPawn) {
-                out.print(" " + WHITE_PAWN + " ");
-            }
-            else {
-                out.print(" " + whitePieces[column] + " ");
-            }
+    private static void printPlayer(PrintStream out, ChessPiece piece) {
+        String pieceColor = piece.getTeamColor().name();
+        String printPiece;
+        if (pieceColor.equalsIgnoreCase("white")) {
+           out.print(SET_TEXT_COLOR_WHITE);
+           printPiece = getWhitePieces(piece);
         }
         else {
             out.print(SET_TEXT_COLOR_BLACK);
-            if (isPawn) {
-                out.print(" " + BLACK_PAWN + " ");
-            }
-            else {
-                out.print(" " + blackPieces[column] + " ");
-            }
+            printPiece = getBlackPieces(piece);
         }
+        out.print(" " + printPiece + " ");
+    }
+    private static void printBlankSpace(PrintStream out) {
+        out.print(" " + EMPTY + " ");
+    }
+
+
+    private static String getWhitePieces(ChessPiece piece) {
+        String printPiece = null;
+        if (piece.getPieceType().equals(ChessPiece.PieceType.KING)) {
+            printPiece = WHITE_KING;
+        }
+        else if (piece.getPieceType().equals(ChessPiece.PieceType.QUEEN)) {
+            printPiece = WHITE_QUEEN;
+        }
+        else if (piece.getPieceType().equals(ChessPiece.PieceType.ROOK)) {
+            printPiece = WHITE_ROOK;
+        }
+        else if (piece.getPieceType().equals(ChessPiece.PieceType.KNIGHT)) {
+            printPiece = WHITE_KNIGHT;
+        }
+        else if (piece.getPieceType().equals(ChessPiece.PieceType.PAWN)) {
+            printPiece = WHITE_PAWN;
+        }
+        else if (piece.getPieceType().equals(ChessPiece.PieceType.BISHOP)) {
+            printPiece = WHITE_BISHOP;
+        }
+        return printPiece;
+    }
+
+    private static String getBlackPieces(ChessPiece piece) {
+        String printPiece = null;
+        if (piece.getPieceType().equals(ChessPiece.PieceType.KING)) {
+            printPiece = BLACK_KING;
+        }
+        else if (piece.getPieceType().equals(ChessPiece.PieceType.QUEEN)) {
+            printPiece = BLACK_QUEEN;
+        }
+        else if (piece.getPieceType().equals(ChessPiece.PieceType.ROOK)) {
+            printPiece = BLACK_ROOK;
+        }
+        else if (piece.getPieceType().equals(ChessPiece.PieceType.KNIGHT)) {
+            printPiece = BLACK_KNIGHT;
+        }
+        else if (piece.getPieceType().equals(ChessPiece.PieceType.PAWN)) {
+            printPiece = BLACK_PAWN;
+        }
+        else if (piece.getPieceType().equals(ChessPiece.PieceType.BISHOP)) {
+            printPiece = BLACK_BISHOP;
+        }
+        return printPiece;
     }
 
 }
