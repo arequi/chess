@@ -12,6 +12,8 @@ import model.response.ListGamesResponse;
 import model.response.LogoutResponse;
 import ui.websocket.NotificationHandler;
 import ui.websocket.WebSocketFacade;
+import webSocketMessages.serverMessages.Error;
+import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.JoinPlayer;
 import webSocketMessages.userCommands.UserGameCommand;
 
@@ -117,14 +119,12 @@ public class PostLoginUI {
             Repl.state = IN_GAME;
             if (playerColorString.equalsIgnoreCase("white")) {
                 playerColor = ChessGame.TeamColor.WHITE;
-            }
-            else {
+            } else {
                 playerColor = ChessGame.TeamColor.BLACK;
             }
             ws = new WebSocketFacade(serverUrl, notificationHandler);
             Integer gameID = ServerFacade.gameIDs.get(gameNum);
             ws.joinPlayer(PreLoginUI.authToken, gameID, playerColor);
-
             return "Successfully joined game.";
         }
         if (response.message().equals("Error: unauthorized")) {
@@ -135,8 +135,7 @@ public class PostLoginUI {
         }
         if (response.message().equals("Error: already taken")) {
             throw new ResponseException(403, "Error: already taken");
-        }
-        else {
+        } else {
             throw new ResponseException(500, "Unknown error");
         }
     }

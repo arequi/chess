@@ -35,6 +35,8 @@ public class SQLGameDAO implements GameDAO{
         Random rand = new Random();
         Integer gameID = rand.nextInt(10000) + 1;
         ChessGame game = new ChessGame();
+        // TODO: CHANGED
+        game.setTeamTurn(ChessGame.TeamColor.WHITE);
         ArrayList<UserData> observers = new ArrayList<>();
         GameData data = new GameData(gameID, null, null, gameName, game, null);
         String sql = "INSERT INTO Game (gameID, whiteUsername, blackUsername, gameName, game, observers) VALUES(?,?,?,?,?,?)";

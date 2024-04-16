@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
-    public final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
 
     public void add(String authToken, Session session) {
         var connection = new Connection(authToken, session);
@@ -53,18 +53,6 @@ public class ConnectionManager {
                 }
             }
         }
-        // ERROR type
-        else {
-            for (var c : connections.values()) {
-                if (c.session.isOpen()) {
-                    if (c.authToken.equals(excludeAuthToken)) {
-                        c.send(new Gson().toJson(serverMessage));
-                    }
-                } else {
-                    removeList.add(c);
-                }
-            }
-        }
             // Clean up any connections that were left open.
             for (var c : removeList) {
                 connections.remove(c.authToken);
@@ -88,7 +76,16 @@ public class ConnectionManager {
         }
     }
 
-        public void sendError(String msg, Session session) throws IOException {
-            session.getRemote().sendString(msg);
+        public static void sendError(String authToken, ServerMessage errorMessage) throws IOException {
+            var removeList = new ArrayList<Connection>();
+            for (var c : connections.values()) {
+                if (c.session.isOpen()) {
+                    if (c.authToken.equals(authToken)) {
+                        c.send(new Gson().toJson(errorMessage));
+                    }
+                } else {
+                    removeList.add(c);
+                }
+            }
         }
     }

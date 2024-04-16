@@ -14,10 +14,7 @@ import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.JoinObserver;
-import webSocketMessages.userCommands.JoinPlayer;
-import webSocketMessages.userCommands.MakeMove;
-import webSocketMessages.userCommands.UserGameCommand;
+import webSocketMessages.userCommands.*;
 
 //need to extend Endpoint for websocket to work properly
 public class WebSocketFacade extends Endpoint {
@@ -51,7 +48,7 @@ public class WebSocketFacade extends Endpoint {
                             notificationHandler.notify(errorMessage);
                         }
                     } catch (Exception ex){
-                        notificationHandler.notify(new Error(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
+                        notificationHandler.notify(new Error(ex.getMessage()));
                     }
                 }
             });
@@ -71,6 +68,13 @@ public class WebSocketFacade extends Endpoint {
 
     public void joinPlayer(String authToken, Integer gameID, ChessGame.TeamColor playerColor) throws ResponseException {
         try {
+//            GameData gameData =
+//            if (playerColor.name().equalsIgnoreCase("white") && gameData.whiteUsername() != null) {
+//                connections.sendError("error: white team already taken!", conn.session);
+//            }
+//            else if (playerColor.name().equalsIgnoreCase("black") && gameData.blackUsername() != null) {
+//                connections.sendError("error: black team already taken!", conn.session);
+//            }
             var command = new JoinPlayer(authToken, gameID, playerColor);
             send(new Gson().toJson(command));
         } catch (IOException ex) {
@@ -102,9 +106,9 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    public void leave(String authToken) throws ResponseException {
+    public void leave(String authToken, Integer gameID) throws ResponseException {
         try {
-            var command = new UserGameCommand(authToken);
+            var command = new Leave(authToken, gameID);
             send(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
@@ -114,9 +118,9 @@ public class WebSocketFacade extends Endpoint {
     }
 
 
-    public void resign(String authToken) throws ResponseException {
+    public void resign(String authToken, Integer gameID) throws ResponseException {
         try {
-            var command = new UserGameCommand(authToken);
+            var command = new Resign(authToken, gameID);
             send(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(500, ex.getMessage());
@@ -124,4 +128,6 @@ public class WebSocketFacade extends Endpoint {
             throw new RuntimeException(e);
         }
     }
+
+
 }

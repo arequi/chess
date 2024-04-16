@@ -91,8 +91,6 @@ public class ServerFacade {
     public JoinGameResponse joinGame (Integer gameNum, String playerColor) throws ResponseException {
         int gameID = gameIDs.get(gameNum);
         JoinGameRequest request = new JoinGameRequest(gameID, playerColor);
-        // call http communicator joinGame that does this instead
-        // call websocket communicator join game
         return this.makeRequest("PUT", "/game", request, JoinGameResponse.class);
     }
 

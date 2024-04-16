@@ -23,7 +23,9 @@ public class ChessGame {
     ChessPosition kingPosition;
 
     public ChessGame() {
-
+        board = new ChessBoard();
+        board.resetBoard();
+        this.setTeamTurn(TeamColor.WHITE);
     }
 
     /**
@@ -227,8 +229,6 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         movesCollection = new HashSet<>();
-
-        //TODO: 1. clone board, apply move, then call isinCheck method
             // find position of king whose turn it is currently
             kingPosition = findKing(board, teamColor);
             // find all possible moves the king can make
@@ -239,7 +239,6 @@ public class ChessGame {
             if (board.equals(clonedBoardReset)) {
                 return false;
             }
-            // TODO: if no moves get you out of check, then you're in check mate
             Iterator<ChessMove> itr = movesCollection.iterator();
             ChessMove currentMove;
             while (itr.hasNext()) {

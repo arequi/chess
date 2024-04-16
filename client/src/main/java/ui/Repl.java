@@ -1,9 +1,7 @@
 package ui;
 
 import chess.ChessGame;
-import com.google.gson.Gson;
 import ui.websocket.NotificationHandler;
-import ui.websocket.WebSocketFacade;
 import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
@@ -21,13 +19,13 @@ public class Repl implements NotificationHandler{
     private final String serverUrl;
     public static ChessGame currentGame;
 
-    public Repl(String serverUrl){
+    public Repl(String serverUrl) throws ResponseException {
+
         this.serverUrl = serverUrl;
         preLogin = new PreLoginUI(serverUrl, this);
         postLogin = new PostLoginUI(serverUrl, this);
         gameplayUI = new GameplayUI(serverUrl, this);
     }
-
 
     // command line text
     public void run () throws Exception {
