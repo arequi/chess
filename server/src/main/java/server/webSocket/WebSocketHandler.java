@@ -142,7 +142,6 @@ public class WebSocketHandler {
     }
 
     public void resignGame(String message, Connection conn) throws IOException, DataAccessException {
-        // TODO: end game (no more moves can be made)
         Resign resign = new Gson().fromJson(message, Resign.class);
         Integer gameID = resign.getGameID();
         ChessGame game = gameDAO.getGame(gameID).game();

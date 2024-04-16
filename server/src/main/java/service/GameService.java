@@ -1,6 +1,5 @@
 package service;
 
-import chess.ChessBoard;
 import chess.ChessGame;
 import dataAccess.*;
 import model.GameData;
@@ -22,7 +21,7 @@ public class GameService {
         return new ListGamesResponse(new SQLGameDAO().listGames(), null);
     }
 
-    public CreateGameResponse CreateGame(String gameName, String auth) throws DataAccessException {
+    public CreateGameResponse createGame(String gameName, String auth) throws DataAccessException {
         if (new SQLAuthDAO().getAuth(auth) == null) {
             throw new DataAccessException("Error: unauthorized");
         }
@@ -33,7 +32,7 @@ public class GameService {
         return new CreateGameResponse(newGame.gameID(), null);
     }
 
-    public JoinGameResponse JoinGame(Integer gameID, String playerColor, String auth) throws DataAccessException {
+    public JoinGameResponse joinGame(Integer gameID, String playerColor, String auth) throws DataAccessException {
         if (new SQLAuthDAO().getAuth(auth) == null) {
             throw new DataAccessException("Error: unauthorized");
         }

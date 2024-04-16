@@ -4,18 +4,12 @@ import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
-import com.google.gson.Gson;
-import model.UserData;
 import model.response.CreateGameResponse;
 import model.response.JoinGameResponse;
 import model.response.ListGamesResponse;
 import model.response.LogoutResponse;
 import ui.websocket.NotificationHandler;
 import ui.websocket.WebSocketFacade;
-import webSocketMessages.serverMessages.Error;
-import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.JoinPlayer;
-import webSocketMessages.userCommands.UserGameCommand;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -82,7 +76,7 @@ public class PostLoginUI {
         if (response.message() == null) {
             return "Successfully logged out.";
         }
-        throw new ResponseException(401, "Unable to log out");
+        throw new ResponseException("Unable to log out");
     }
 
     public String createGame (String gameName) throws ResponseException {
@@ -91,13 +85,13 @@ public class PostLoginUI {
             return "Successfully created game";
         }
         if (response.message().equals("Error: unauthorized")) {
-            throw new ResponseException(401, "unauthorized");
+            throw new ResponseException("unauthorized");
         }
         if (response.message().equals("Error: bad request")) {
-            throw new ResponseException(400, "Expected: <gameName>");
+            throw new ResponseException("Expected: <gameName>");
         }
         else {
-            throw new ResponseException(500, "Unknown error");
+            throw new ResponseException("Unknown error");
         }
     }
 
@@ -106,7 +100,7 @@ public class PostLoginUI {
         if (response.message() == null) {
             return String.valueOf(response.games());
         }
-        throw new ResponseException(401, "unauthorized");
+        throw new ResponseException("unauthorized");
     }
 
     public String joinGame (String... params) throws Exception {
@@ -128,15 +122,15 @@ public class PostLoginUI {
             return "Successfully joined game.";
         }
         if (response.message().equals("Error: unauthorized")) {
-            throw new ResponseException(401, "unauthorized");
+            throw new ResponseException("unauthorized");
         }
         if (response.message().equals("Error: bad request")) {
-            throw new ResponseException(400, "Error: bad request");
+            throw new ResponseException("Error: bad request");
         }
         if (response.message().equals("Error: already taken")) {
-            throw new ResponseException(403, "Error: already taken");
+            throw new ResponseException("Error: already taken");
         } else {
-            throw new ResponseException(500, "Unknown error");
+            throw new ResponseException("Unknown error");
         }
     }
 
@@ -152,16 +146,16 @@ public class PostLoginUI {
             return "Successfully observing game.";
         }
         if (response.message().equals("Error: unauthorized")) {
-            throw new ResponseException(401, "unauthorized");
+            throw new ResponseException("unauthorized");
         }
         if (response.message().equals("Error: bad request")) {
-            throw new ResponseException(400, "Error: bad request");
+            throw new ResponseException("Error: bad request");
         }
         if (response.message().equals("Error: already taken")) {
-            throw new ResponseException(403, "Error: already taken");
+            throw new ResponseException("Error: already taken");
         }
         else {
-            throw new ResponseException(500, "Unknown error");
+            throw new ResponseException("Unknown error");
         }
     }
 

@@ -17,7 +17,7 @@ public class JoinGameHandler implements Route {
             String auth = req.headers("authorization");
             GameService service = new GameService();
             JoinGameRequest joinGameRequest = gson.fromJson(req.body(), JoinGameRequest.class);
-            JoinGameResponse joinGameResponse = service.JoinGame(joinGameRequest.gameID(), joinGameRequest.playerColor(), auth);
+            JoinGameResponse joinGameResponse = service.joinGame(joinGameRequest.gameID(), joinGameRequest.playerColor(), auth);
             res.status(200);
             return new Gson().toJson(joinGameResponse);
         } catch (DataAccessException e) {

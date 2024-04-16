@@ -53,7 +53,7 @@ public class WebSocketFacade extends Endpoint {
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
-            throw new ResponseException(500, ex.getMessage());
+            throw new ResponseException(ex.getMessage());
         }
     }
 
@@ -78,7 +78,7 @@ public class WebSocketFacade extends Endpoint {
             var command = new JoinPlayer(authToken, gameID, playerColor);
             send(new Gson().toJson(command));
         } catch (IOException ex) {
-            throw new ResponseException(500, ex.getMessage());
+            throw new ResponseException(ex.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -89,7 +89,7 @@ public class WebSocketFacade extends Endpoint {
             var command = new JoinObserver(authToken, gameID);
             send(new Gson().toJson(command));
         } catch (IOException ex) {
-            throw new ResponseException(500, ex.getMessage());
+            throw new ResponseException(ex.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -100,7 +100,7 @@ public class WebSocketFacade extends Endpoint {
             var command = new MakeMove(authToken, gameID, move);
             send(new Gson().toJson(command));
         } catch (IOException ex) {
-            throw new ResponseException(500, ex.getMessage());
+            throw new ResponseException(ex.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -111,7 +111,7 @@ public class WebSocketFacade extends Endpoint {
             var command = new Leave(authToken, gameID);
             send(new Gson().toJson(command));
         } catch (IOException ex) {
-            throw new ResponseException(500, ex.getMessage());
+            throw new ResponseException(ex.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -123,7 +123,7 @@ public class WebSocketFacade extends Endpoint {
             var command = new Resign(authToken, gameID);
             send(new Gson().toJson(command));
         } catch (IOException ex) {
-            throw new ResponseException(500, ex.getMessage());
+            throw new ResponseException(ex.getMessage());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

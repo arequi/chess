@@ -18,7 +18,7 @@ public class CreateGameHandler implements Route {
             String auth = req.headers("authorization");
             GameService service = new GameService();
             CreateGameRequest createGameRequest = gson.fromJson(req.body(), CreateGameRequest.class);
-            CreateGameResponse createGameResponse = service.CreateGame(createGameRequest.gameName(), auth);
+            CreateGameResponse createGameResponse = service.createGame(createGameRequest.gameName(), auth);
             res.status(200);
             return new Gson().toJson(createGameResponse);
         } catch (DataAccessException e) {

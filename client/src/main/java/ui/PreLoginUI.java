@@ -4,9 +4,6 @@ import model.response.LoginResponse;
 import model.response.RegisterResponse;
 import ui.websocket.NotificationHandler;
 
-import java.net.URI;
-import java.net.URL;
-import java.sql.PreparedStatement;
 import java.util.Arrays;
 
 import static ui.EscapeSequences.*;
@@ -56,7 +53,7 @@ public class PreLoginUI {
                 return "Successfully logged in";
             }
         }
-        throw new ResponseException(401, "Incorrect username or password. Try again");
+        throw new ResponseException("Incorrect username or password. Try again");
     }
 
     public String register (String... params) throws ResponseException {
@@ -68,13 +65,13 @@ public class PreLoginUI {
             }
         }
         if (response.message().equals("Error: already taken")) {
-            throw new ResponseException(403, "Username is already registered.");
+            throw new ResponseException("Username is already registered.");
         }
         else if (response.message().equals("Error: bad request")) {
-            throw new ResponseException(400, "Expected: <username> <password> <email>");
+            throw new ResponseException("Expected: <username> <password> <email>");
         }
         else {
-            throw new ResponseException(500, "Error unknown.");
+            throw new ResponseException("Error unknown.");
         }
     }
 
