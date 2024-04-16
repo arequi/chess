@@ -258,36 +258,27 @@ public class ChessPiece {
     public Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition myPosition) {
         queenMovesCollection = new HashSet<>();
 
-        // upLeft
-
         upLeft(board, myPosition);
 
-        // up
         up(board, myPosition);
 
-        // upRight
         upRight(board, myPosition);
 
-        // left
         left(board, myPosition);
 
-        // right
         right(board, myPosition);
 
-        // downLeft
         downLeft(board, myPosition);
 
-        // down
         down(board, myPosition);
 
-        // downRight
         downRight(board, myPosition);
 
         return queenMovesCollection;
     }
     private void upLeft (ChessBoard board, ChessPosition myPosition) {
+        currentPosition = myPosition;
         while (currentPosition.getRow() != 8 && currentPosition.getColumn() != 1) {
-            currentPosition = myPosition;
             ChessPosition upLeft = new ChessPosition(currentPosition.getRow() + 1, currentPosition.getColumn() - 1);
             if (board.getPiece(upLeft) == null) {
                 move = new ChessMove(myPosition, upLeft, null);
