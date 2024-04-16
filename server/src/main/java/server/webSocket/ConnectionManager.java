@@ -76,16 +76,21 @@ public class ConnectionManager {
         }
     }
 
-        public static void sendError(String authToken, ServerMessage errorMessage) throws IOException {
-            var removeList = new ArrayList<Connection>();
-            for (var c : connections.values()) {
-                if (c.session.isOpen()) {
-                    if (c.authToken.equals(authToken)) {
-                        c.send(new Gson().toJson(errorMessage));
+        public void sendError(String authToken, ServerMessage errorMessage) {
+            try {
+                var removeList = new ArrayList<Connection>();
+                for (var c : connections.values()) {
+                    if (c.session.isOpen()) {
+                        if (c.authToken.equals(authToken)) {
+                            c.send(new Gson().toJson(errorMessage));
+                            break;
+                        }
+                    } else {
+                        removeList.add(c);
                     }
-                } else {
-                    removeList.add(c);
                 }
-            }
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
         }
+    }
     }

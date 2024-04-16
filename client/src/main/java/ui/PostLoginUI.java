@@ -10,7 +10,6 @@ import model.response.ListGamesResponse;
 import model.response.LogoutResponse;
 import ui.websocket.NotificationHandler;
 import ui.websocket.WebSocketFacade;
-
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -108,7 +107,6 @@ public class PostLoginUI {
         String playerColorString = params[1];
         ChessGame.TeamColor playerColor;
         JoinGameResponse response = server.joinGame(gameNum, playerColorString);
-        currentGameID = ServerFacade.gameIDs.get(gameNum);
         if (response.message() == null) {
             Repl.state = IN_GAME;
             if (playerColorString.equalsIgnoreCase("white")) {
@@ -117,18 +115,17 @@ public class PostLoginUI {
                 playerColor = ChessGame.TeamColor.BLACK;
             }
             ws = new WebSocketFacade(serverUrl, notificationHandler);
-            Integer gameID = ServerFacade.gameIDs.get(gameNum);
-            ws.joinPlayer(PreLoginUI.authToken, gameID, playerColor);
+            ws.joinPlayer(PreLoginUI.authToken, gameNum, playerColor);
             return "Successfully joined game.";
         }
         if (response.message().equals("Error: unauthorized")) {
-            throw new ResponseException("unauthorized");
+            throw new ResponseException("error: unauthorized");
         }
         if (response.message().equals("Error: bad request")) {
             throw new ResponseException("Error: bad request");
         }
         if (response.message().equals("Error: already taken")) {
-            throw new ResponseException("Error: already taken");
+                throw new ResponseException("Error: already taken");
         } else {
             throw new ResponseException("Unknown error");
         }
@@ -140,9 +137,7 @@ public class PostLoginUI {
         if (response.message() == null) {
             Repl.state = IN_GAME;
             ws = new WebSocketFacade(serverUrl, notificationHandler);
-            Integer gameID = ServerFacade.gameIDs.get(gameNum);
-            currentGameID = gameID;
-            ws.joinObserver(PreLoginUI.authToken, gameID);
+            ws.joinObserver(PreLoginUI.authToken, gameNum);
             return "Successfully observing game.";
         }
         if (response.message().equals("Error: unauthorized")) {

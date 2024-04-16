@@ -1,32 +1,20 @@
 package ui;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPiece;
-import chess.ChessPosition;
-import model.response.JoinGameResponse;
-import model.response.LoginResponse;
-import model.response.RegisterResponse;
+import chess.*;
 import ui.websocket.NotificationHandler;
 import ui.websocket.WebSocketFacade;
-import webSocketMessages.serverMessages.Notification;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Scanner;
 
 import static ui.EscapeSequences.*;
-import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
 import static ui.PostLoginUI.currentGameID;
-import static ui.PostLoginUI.displayBoard;
-import static ui.State.IN_GAME;
 import static ui.State.LOGGED_IN;
 
 public class GameplayUI {
     private final ServerFacade server;
     String serverUrl;
     NotificationHandler notificationHandler;
-    WebSocketFacade ws = new WebSocketFacade(serverUrl, notificationHandler);
+
     public GameplayUI(String serverUrl, NotificationHandler notificationHandler) throws ResponseException {
         server = new ServerFacade(serverUrl);
         this.serverUrl = serverUrl;
@@ -42,7 +30,7 @@ public class GameplayUI {
             var params = Arrays.copyOfRange(tokens, 1, tokens.length);
             return switch (cmd) {
                 case "highlight" -> highlight(params);
-                case "redraw" -> redraw(params);
+                case "redraw" -> redraw();
                 case "move" -> move(params);
                 case "resign" -> resign();
                 case "leave" -> leave();
@@ -71,9 +59,9 @@ public class GameplayUI {
         return "Successfully Highlighted moves";
     }
 
-    public String redraw (String... params) throws ResponseException {
-
-//        PostLoginUI.displayBoard(color, currentBoard);
+    public String redraw () throws ResponseException {
+        ChessBoard currentBoard = Repl.currentGame.getBoard();
+        PostLoginUI.displayBoard(Repl.currentColor, currentBoard);
         return "Current board displayed";
     }
 
@@ -94,24 +82,21 @@ public class GameplayUI {
             promotionPiece = getPromotionPiece(params[2]);
         }
         ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
+        WebSocketFacade ws = new WebSocketFacade(serverUrl, notificationHandler);
         ws.makeMove(PreLoginUI.authToken, currentGameID, move);
         return "Successfully made a move";
     }
 
     public String resign () throws ResponseException {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("\n" + RESET_TEXT_COLOR + "Are you sure you want to resign?");
-        String line = scanner.nextLine();
-        if (line.contains("y")) {
-            Repl.state = State.LOGGED_IN;
-            ws.resign(PreLoginUI.authToken, currentGameID);
-            return "Successfully resigned";
-        }
-        return "Didn't actually want to resign";
+        WebSocketFacade ws = new WebSocketFacade(serverUrl, notificationHandler);
+        ws.resign(PreLoginUI.authToken, currentGameID);
+        Repl.state = State.LOGGED_IN;
+        return "Successfully resigned";
     }
 
     public String leave () throws ResponseException {
         Repl.state = LOGGED_IN;
+        WebSocketFacade ws = new WebSocketFacade(serverUrl, notificationHandler);
         ws.leave(PreLoginUI.authToken, currentGameID);
         return "Successfully Left Game";
     }

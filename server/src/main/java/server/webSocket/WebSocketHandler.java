@@ -5,40 +5,39 @@ import com.google.gson.Gson;
 import dataAccess.*;
 import model.AuthData;
 import model.GameData;
-import model.UserData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import webSocketMessages.serverMessages.Error;
-import webSocketMessages.serverMessages.LoadGame;
-import webSocketMessages.serverMessages.Notification;
-import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.LoadGameMessage;
+import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
-import java.lang.ref.PhantomReference;
-import java.util.Collection;
+import java.util.SortedMap;
 
 
 @WebSocket
 public class WebSocketHandler {
 
-
-    private final ConnectionManager connections = new ConnectionManager();
-    public static Collection<ChessGame> createdGames;
+    public final ConnectionManager connections = new ConnectionManager();
     private final GameDAO gameDAO = new SQLGameDAO();
+    private final AuthDAO authDAO = new SQLAuthDAO();
+    public static SortedMap<Integer, Integer> gameIDs;
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws Exception {
         UserGameCommand command = new Gson().fromJson(message, UserGameCommand.class);
         Connection conn = connections.getConnection(command.getAuthString(), session);
         if (conn == null) {
-            if (new SQLAuthDAO().getAuth(command.getAuthString()) != null) {
+            if (authDAO.getAuth(command.getAuthString()) != null) {
                 connections.add(command.getAuthString(), session);
             }
             else {
-                ServerMessage serverMessage = new Error("error: invalid authToken");
-                ConnectionManager.sendError(command.getAuthString(), serverMessage);
+                connections.add(command.getAuthString(), session);
+                ErrorMessage errorMessage = new ErrorMessage("error: invalid authToken");
+                connections.sendError(command.getAuthString(), errorMessage);
+                return;
             }
         }
         conn = connections.getConnection(command.getAuthString(), session);
@@ -52,81 +51,124 @@ public class WebSocketHandler {
             }
         }
         else {
-            ServerMessage serverMessage = new Error("error: user not found.");
-            ConnectionManager.sendError(command.getAuthString(), serverMessage);
+            ErrorMessage errorMessage = new ErrorMessage("error: user not found.");
+            connections.sendError(command.getAuthString(), errorMessage);
         }
      }
 
-    public void joinPlayer(String message, Connection conn) throws Exception {
-        JoinPlayer joinPlayer = new Gson().fromJson(message, JoinPlayer.class);
-        String color = joinPlayer.getPlayerColor().name();
-        Integer gameID = joinPlayer.getGameID();
-        if (gameDAO.getGame(gameID) == null) {
-            ServerMessage serverMessage = new Error("error: bad gameID");
-            ConnectionManager.sendError(conn.authToken, serverMessage);
-        }
-        else {
+    public void joinPlayer(String message, Connection conn) {
+        try {
+            JoinPlayer joinPlayer = new Gson().fromJson(message, JoinPlayer.class);
+            String color = joinPlayer.getPlayerColor().name();
+            Integer gameNum = joinPlayer.getGameID();
+            String authToken = conn.authToken;
+            if (gameIDs.get(gameNum) == null) {
+                ErrorMessage errorMessage = new ErrorMessage("error: bad gameID");
+                connections.sendError(authToken, errorMessage);
+                return;
+            }
+            Integer gameID = gameIDs.get(gameNum);
             GameData gameData = gameDAO.getGame(gameID);
             ChessGame game = gameData.game();
-//            if (game.getTeamTurn() != joinPlayer.getPlayerColor()) {
-//                ServerMessage serverMessage = new Error("error: team is already taken");
-//                ConnectionManager.sendError(conn.authToken, serverMessage);
-//            }
-            String authToken = conn.authToken;
-            var serverMessage = new LoadGame(game);
-            connections.broadcast(authToken, serverMessage);
-            AuthData authData = new SQLAuthDAO().getAuth(authToken);
+            if (authDAO.getAuth(authToken) == null) {
+                ErrorMessage errorMessage = new ErrorMessage("error: invalid authToken");
+                connections.sendError(authToken, errorMessage);
+                return;
+            }
+            AuthData authData = authDAO.getAuth(authToken);
             String username = authData.username();
-            var serverNotification = new Notification(username + " has joined the game as " + color);
+            if (gameData.blackUsername() == null && gameData.whiteUsername() == null) {
+                ErrorMessage errorMessage = new ErrorMessage("error: empty game!");
+                connections.sendError(authToken, errorMessage);
+                return;
+            }
+            if (color.equalsIgnoreCase("white") && !gameData.whiteUsername().equals(username)) {
+                ErrorMessage errorMessage = new ErrorMessage("error: team already taken!");
+                connections.sendError(authToken, errorMessage);
+                return;
+            }
+            if (color.equalsIgnoreCase("black") && !gameData.blackUsername().equals(username)) {
+                ErrorMessage errorMessage = new ErrorMessage("error: team already taken!");
+                connections.sendError(authToken, errorMessage);
+                return;
+            }
+            var serverMessage = new LoadGameMessage(game, color);
+            connections.broadcast(authToken, serverMessage);
+            var serverNotification = new NotificationMessage(username + " has joined the game as " + color);
             connections.broadcast(authToken, serverNotification);
+        }
+        catch (DataAccessException e) {
+            ErrorMessage errorMessage = new ErrorMessage("error accessing database");
+            connections.sendError(conn.authToken, errorMessage);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 
-    private void joinObserver(String message, Connection conn) throws IOException, DataAccessException {
-        JoinObserver joinObserver = new Gson().fromJson(message, JoinObserver.class);
-        Integer gameID = joinObserver.getGameID();
-        if (gameDAO.getGame(gameID) == null) {
-            ServerMessage serverMessage = new Error("error: bad gameID");
-            ConnectionManager.sendError(conn.authToken, serverMessage);
+    private void joinObserver(String message, Connection conn) {
+        try {
+            JoinObserver joinObserver = new Gson().fromJson(message, JoinObserver.class);
+            Integer gameNum = joinObserver.getGameID();
+            if (gameIDs.get(gameNum) == null) {
+                ErrorMessage errorMessage = new ErrorMessage("error: bad gameID");
+                connections.sendError(conn.authToken, errorMessage);
+                return;
+            }
+            Integer gameID = gameIDs.get(gameNum);
+            GameData gameData = gameDAO.getGame(gameID);
+            ChessGame game = gameData.game();
+            var serverMessage = new LoadGameMessage(game, null);
+            String authToken = conn.authToken;
+            connections.broadcast(authToken, serverMessage);
+            if (authDAO.getAuth(authToken) == null) {
+                ErrorMessage errorMessage = new ErrorMessage("error: invalid authToken");
+                connections.sendError(authToken, errorMessage);
+                return;
+            }
+            AuthData authData = authDAO.getAuth(authToken);
+            String username = authData.username();
+            var serverNotification = new NotificationMessage(username + " is observing the game");
+            connections.broadcast(authToken, serverNotification);
         }
-        GameData gameData = gameDAO.getGame(gameID);
-        ChessGame game = gameData.game();
-        ChessBoard board;
-        if (game.getBoard() == null) {
-            board = new ChessBoard();
-            board.resetBoard();
-            game.setBoard(board);
-            game.setTeamTurn(ChessGame.TeamColor.WHITE);
+        catch (DataAccessException e) {
+            ErrorMessage errorMessage = new ErrorMessage("error accessing database");
+            connections.sendError(conn.authToken, errorMessage);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
-        var serverMessage = new LoadGame(game);
-        String authToken = conn.authToken;
-        connections.broadcast(authToken, serverMessage);
-        AuthData authData = new SQLAuthDAO().getAuth(authToken);
-        String username = authData.username();
-        var serverNotification = new Notification(username + " is observing the game");
-        connections.broadcast(authToken, serverNotification);
     }
 
     public void makeMove(String message, Connection conn) throws IOException, DataAccessException, InvalidMoveException {
         MakeMove makeMove = new Gson().fromJson(message, MakeMove.class);
-        Integer gameID = makeMove.getGameID();
-        ChessGame game = gameDAO.getGame(gameID).game();
+        Integer gameNum = makeMove.getGameID();
+        GameData gameData = gameDAO.getGame(gameNum);
+        ChessGame game = gameData.game();
         ChessMove move = makeMove.getMove();
         ChessPosition startPosition = move.getStartPosition();
         ChessPosition endPosition = move.getEndPosition();
         if (game.getTeamTurn().equals(ChessGame.TeamColor.WHITE)) {
-            // mirror move
             startPosition = new ChessPosition(8-startPosition.getRow()+1, 8-startPosition.getColumn()+1);
         }
         String startString = getPositionString(startPosition.getRow(), startPosition.getColumn());
         String endString = getPositionString(endPosition.getRow(), endPosition.getColumn());
         String authToken = conn.authToken;
-        AuthData authData = new SQLAuthDAO().getAuth(authToken);
+        AuthData authData = authDAO.getAuth(authToken);
         String username = authData.username();
         game.makeMove(move);
-        var serverMessage = new LoadGame(game);
-        connections.broadcastMakeMoveLoadGame(serverMessage);
-        var serverNotification = new Notification(username + "moved from " + startString + " to " + endString);
+        LoadGameMessage loadGameMessage;
+        if (gameData.blackUsername().equalsIgnoreCase(username)) {
+            loadGameMessage = new LoadGameMessage(game, "black");
+        }
+        else if (gameData.whiteUsername().equalsIgnoreCase(username)) {
+            loadGameMessage = new LoadGameMessage(game, "white");
+        }
+        else {
+            loadGameMessage = new LoadGameMessage(game, null);
+        }
+        connections.broadcastMakeMoveLoadGame(loadGameMessage);
+        var serverNotification = new NotificationMessage(username + "moved from " + startString + " to " + endString);
         connections.broadcast(authToken, serverNotification);
     }
 
@@ -135,9 +177,9 @@ public class WebSocketHandler {
         Integer gameID = leave.getGameID();
         String authToken = conn.authToken;
         connections.remove(authToken);
-        AuthData authData = new SQLAuthDAO().getAuth(authToken);
+        AuthData authData = authDAO.getAuth(authToken);
         String username = authData.username();
-        var serverMessage = new Notification(username + " has left the game");
+        var serverMessage = new NotificationMessage(username + " has left the game");
         connections.broadcast(authToken, serverMessage);
     }
 
@@ -147,9 +189,9 @@ public class WebSocketHandler {
         ChessGame game = gameDAO.getGame(gameID).game();
         game.setTeamTurn(null);
         String authToken = conn.authToken;
-        AuthData authData = new SQLAuthDAO().getAuth(authToken);
+        AuthData authData = authDAO.getAuth(authToken);
         String username = authData.username();
-        var serverMessage = new Notification(username + " has resigned");
+        var serverMessage = new NotificationMessage(username + " has resigned");
         connections.broadcast(authToken, serverMessage);
     }
 

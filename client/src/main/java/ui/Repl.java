@@ -2,9 +2,9 @@ package ui;
 
 import chess.ChessGame;
 import ui.websocket.NotificationHandler;
-import webSocketMessages.serverMessages.Error;
-import webSocketMessages.serverMessages.LoadGame;
-import webSocketMessages.serverMessages.Notification;
+import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.LoadGameMessage;
+import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.serverMessages.ServerMessage;
 
 import java.util.Scanner;
@@ -18,6 +18,7 @@ public class Repl implements NotificationHandler{
     private GameplayUI gameplayUI;
     private final String serverUrl;
     public static ChessGame currentGame;
+    public static String currentColor;
 
     public Repl(String serverUrl) throws ResponseException {
 
@@ -61,9 +62,9 @@ public class Repl implements NotificationHandler{
     @Override
     public void notify(ServerMessage message) {
         switch (message.getServerMessageType()) {
-            case NOTIFICATION -> displayNotification(((Notification) message).getMessage());
-            case ERROR -> sendError(((Error) message).getErrorMessage());
-            case LOAD_GAME -> loadGame(((LoadGame) message).getGame());
+            case NOTIFICATION -> displayNotification(((NotificationMessage) message).getMessage());
+            case ERROR -> sendError(((ErrorMessage) message).getErrorMessage());
+            case LOAD_GAME -> loadGame((LoadGameMessage) message);
         }
     }
 
@@ -75,8 +76,10 @@ public class Repl implements NotificationHandler{
         System.out.println(errorMessage);
     }
 
-    private void loadGame (ChessGame game) {
+    private void loadGame (LoadGameMessage message) {
+        ChessGame game = message.getGame();
         currentGame = game;
-        PostLoginUI.displayBoard(game.getTeamTurn().name(), game.getBoard());
+        currentColor = message.getPlayerColor();
+        PostLoginUI.displayBoard(message.getPlayerColor(), game.getBoard());
     }
 }

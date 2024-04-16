@@ -9,9 +9,11 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+import static server.webSocket.ConnectionManager.connections;
+
 public class JoinGameHandler implements Route {
     @Override
-    public Object handle(Request req, Response res) {
+    public Object handle(Request req, Response res) throws DataAccessException {
         try {
             Gson gson = new Gson();
             String auth = req.headers("authorization");

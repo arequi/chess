@@ -7,8 +7,13 @@ import model.UserData;
 import model.response.CreateGameResponse;
 import model.response.JoinGameResponse;
 import model.response.ListGamesResponse;
+import server.webSocket.WebSocketHandler;
 
 import java.util.ArrayList;
+import java.util.TreeMap;
+
+import static server.webSocket.ConnectionManager.connections;
+import static server.webSocket.WebSocketHandler.gameIDs;
 
 
 public class GameService {
@@ -29,16 +34,32 @@ public class GameService {
             throw new DataAccessException("Error: bad request");
         }
         GameData newGame = new SQLGameDAO().createGame(gameName);
-        return new CreateGameResponse(newGame.gameID(), null);
+        CreateGameResponse response = new CreateGameResponse(newGame.gameID(), null);
+        int gameID = response.gameID();
+        int gameNum;
+        if (gameIDs == null) {
+            gameIDs = new TreeMap<>();
+            gameNum = 1;
+        }
+        else {
+            gameNum = gameIDs.size()+1;
+        }
+        response = new CreateGameResponse(gameNum, null);
+        gameIDs.put(gameNum, gameID);
+        return response;
     }
 
-    public JoinGameResponse joinGame(Integer gameID, String playerColor, String auth) throws DataAccessException {
+    public JoinGameResponse joinGame(Integer gameNum, String playerColor, String auth) throws DataAccessException {
         if (new SQLAuthDAO().getAuth(auth) == null) {
             throw new DataAccessException("Error: unauthorized");
         }
-        if (gameID == null) {
+        if (gameNum == null) {
             throw new DataAccessException("Error: bad request");
         }
+        if (gameIDs.isEmpty()) {
+            throw new DataAccessException("error: bad request");
+        }
+        Integer gameID = gameIDs.get(gameNum);
         if (new SQLGameDAO().getGame(gameID) == null) {
             throw new DataAccessException("Error: bad request");
         }

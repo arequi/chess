@@ -11,7 +11,6 @@ import ui.ServerFacade;
 import java.util.TreeMap;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static ui.ServerFacade.gameIDs;
 
 
 public class ServerFacadeTests {
@@ -35,7 +34,7 @@ public class ServerFacadeTests {
     @AfterEach
     public void after () throws DataAccessException {
         new ClearService().clear();
-        gameIDs = new TreeMap<>();
+//        gameIDs = new TreeMap<>();
     }
 
     @BeforeEach
@@ -147,7 +146,7 @@ public class ServerFacadeTests {
         String playerColor = "BLACK";
         JoinGameResponse response = serverFacade.joinGame(1, playerColor);
         System.out.println("response(gameID): " + response.gameID());
-        System.out.println("gameIDs map: " + gameIDs);
+//        System.out.println("gameIDs map: " + gameIDs);
         assertNull(response.message());
     }
 

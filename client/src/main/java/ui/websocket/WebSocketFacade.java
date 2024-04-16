@@ -10,9 +10,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import webSocketMessages.serverMessages.Error;
-import webSocketMessages.serverMessages.LoadGame;
-import webSocketMessages.serverMessages.Notification;
+import webSocketMessages.serverMessages.ErrorMessage;
+import webSocketMessages.serverMessages.LoadGameMessage;
+import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.*;
 
@@ -36,19 +36,19 @@ public class WebSocketFacade extends Endpoint {
                     try {
                         ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
                         if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
-                            LoadGame loadGame = new Gson().fromJson(message, LoadGame.class);
+                            LoadGameMessage loadGame = new Gson().fromJson(message, LoadGameMessage.class);
                             notificationHandler.notify(loadGame);
                         }
                         else if (serverMessage.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
-                            Notification notification = new Gson().fromJson(message, Notification.class);
+                            NotificationMessage notification = new Gson().fromJson(message, NotificationMessage.class);
                             notificationHandler.notify(notification);
                         }
                         else {
-                            Error errorMessage = new Gson().fromJson(message, Error.class);
+                            ErrorMessage errorMessage = new Gson().fromJson(message, ErrorMessage.class);
                             notificationHandler.notify(errorMessage);
                         }
                     } catch (Exception ex){
-                        notificationHandler.notify(new Error(ex.getMessage()));
+                        notificationHandler.notify(new ErrorMessage(ex.getMessage()));
                     }
                 }
             });
@@ -66,16 +66,9 @@ public class WebSocketFacade extends Endpoint {
         this.session.getBasicRemote().sendText(msg);
     }
 
-    public void joinPlayer(String authToken, Integer gameID, ChessGame.TeamColor playerColor) throws ResponseException {
+    public void joinPlayer(String authToken, Integer gameNum, ChessGame.TeamColor playerColor) throws ResponseException {
         try {
-//            GameData gameData =
-//            if (playerColor.name().equalsIgnoreCase("white") && gameData.whiteUsername() != null) {
-//                connections.sendError("error: white team already taken!", conn.session);
-//            }
-//            else if (playerColor.name().equalsIgnoreCase("black") && gameData.blackUsername() != null) {
-//                connections.sendError("error: black team already taken!", conn.session);
-//            }
-            var command = new JoinPlayer(authToken, gameID, playerColor);
+            var command = new JoinPlayer(authToken, gameNum, playerColor);
             send(new Gson().toJson(command));
         } catch (IOException ex) {
             throw new ResponseException(ex.getMessage());

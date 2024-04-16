@@ -21,7 +21,7 @@ import java.util.TreeMap;
 public class ServerFacade {
     private final String serverUrl;
     private static AuthData authToken;
-    public static SortedMap<Integer, Integer> gameIDs;
+
     public static Map<String, String> authTokens;
 
     public ServerFacade(String url) {
@@ -70,18 +70,7 @@ public class ServerFacade {
 
     public CreateGameResponse createGame (String gameName) throws ResponseException{
         CreateGameRequest request = new CreateGameRequest(gameName);
-        CreateGameResponse response = this.makeRequest("POST", "/game", request, CreateGameResponse.class);
-        int gameID = response.gameID();
-        int gameNum;
-        if (gameIDs == null) {
-            gameIDs = new TreeMap<>();
-            gameNum = 1;
-        }
-        else {
-            gameNum = gameIDs.size()+1;
-        }
-        gameIDs.put(gameNum, gameID);
-        return response;
+        return this.makeRequest("POST", "/game", request, CreateGameResponse.class);
     }
 
     public ListGamesResponse listGames () throws ResponseException {
@@ -89,14 +78,12 @@ public class ServerFacade {
     }
 
     public JoinGameResponse joinGame (Integer gameNum, String playerColor) throws ResponseException {
-        int gameID = gameIDs.get(gameNum);
-        JoinGameRequest request = new JoinGameRequest(gameID, playerColor);
+        JoinGameRequest request = new JoinGameRequest(gameNum, playerColor);
         return this.makeRequest("PUT", "/game", request, JoinGameResponse.class);
     }
 
     public JoinGameResponse observeGame (Integer gameNum) throws ResponseException {
-        int gameID = gameIDs.get(gameNum);
-        JoinGameRequest request = new JoinGameRequest(gameID, null);
+        JoinGameRequest request = new JoinGameRequest(gameNum, null);
         return this.makeRequest("PUT", "/game", request, JoinGameResponse.class);
     }
 

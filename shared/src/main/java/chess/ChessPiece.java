@@ -598,8 +598,6 @@ public class ChessPiece {
     }
     public Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition) {
         rookMovesCollection = new HashSet<>();
-
-
         // up
         currentPosition = myPosition;
         while (currentPosition.getRow() != 8) {
@@ -614,9 +612,7 @@ public class ChessPiece {
                 rookMovesCollection.add(move);
                 break;
             }
-            else {
-                break;
-            }
+            else {break;}
         }
 
         //down
@@ -634,9 +630,7 @@ public class ChessPiece {
                 rookMovesCollection.add(move);
                 break;
             }
-            else {
-                break;
-            }
+            else {break;}
         }
         //left
         currentPosition = myPosition;
@@ -653,9 +647,7 @@ public class ChessPiece {
                 rookMovesCollection.add(move);
                 break;
             }
-            else {
-                break;
-            }
+            else {break;}
         }
 
         //right
@@ -672,16 +664,12 @@ public class ChessPiece {
                 rookMovesCollection.add(move);
                 break;
             }
-            else {
-                break;
-            }
+            else { break; }
         }
-
         return rookMovesCollection;
     }
     public Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
         pawnMovesCollection = new HashSet<>();
-
         // white pawn types
         if (board.getPiece(myPosition).getTeamColor() == ChessGame.TeamColor.WHITE) {
             // white pawn moving forward on first move
@@ -759,22 +747,16 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         switch(board.getPiece(myPosition).getPieceType()) {
             case KING:
-                // code block
                 return kingMoves(board, myPosition);
             case QUEEN:
-                // code block
                 return queenMoves(board, myPosition);
             case BISHOP:
-                // code block
                 return bishopMoves(board, myPosition);
             case KNIGHT:
-                // code block
                 return knightMoves(board, myPosition);
             case ROOK:
-                // code block
                 return rookMoves(board, myPosition);
             case PAWN:
-                // code block
                 return pawnMoves(board, myPosition);
             case null:
                 return null;
