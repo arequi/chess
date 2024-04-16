@@ -259,24 +259,51 @@ public class ChessPiece {
         queenMovesCollection = new HashSet<>();
 
         // upLeft
-        currentPosition = myPosition;
-        while(currentPosition.getRow() != 8 && currentPosition.getColumn() != 1) {
+
+        upLeft(board, myPosition);
+
+        // up
+        up(board, myPosition);
+
+        // upRight
+        upRight(board, myPosition);
+
+        // left
+        left(board, myPosition);
+
+        // right
+        right(board, myPosition);
+
+        // downLeft
+        downLeft(board, myPosition);
+
+        // down
+        down(board, myPosition);
+
+        // downRight
+        downRight(board, myPosition);
+
+        return queenMovesCollection;
+    }
+    private void upLeft (ChessBoard board, ChessPosition myPosition) {
+        while (currentPosition.getRow() != 8 && currentPosition.getColumn() != 1) {
+            currentPosition = myPosition;
             ChessPosition upLeft = new ChessPosition(currentPosition.getRow() + 1, currentPosition.getColumn() - 1);
             if (board.getPiece(upLeft) == null) {
                 move = new ChessMove(myPosition, upLeft, null);
                 queenMovesCollection.add(move);
                 currentPosition = upLeft;
-            }
-            else if (!isSameColor(board, myPosition, upLeft)) {
+            } else if (!isSameColor(board, myPosition, upLeft)) {
                 move = new ChessMove(myPosition, upLeft, null);
                 queenMovesCollection.add(move);
                 break;
-            }
-            else {
+            } else {
                 break;
             }
         }
-        // up
+    }
+
+    private void up (ChessBoard board, ChessPosition myPosition) {
         currentPosition = myPosition;
         while (currentPosition.getRow() != 8) {
             ChessPosition up = new ChessPosition(currentPosition.getRow()+1, currentPosition.getColumn());
@@ -294,26 +321,27 @@ public class ChessPiece {
                 break;
             }
         }
-        // upRight
-            currentPosition = myPosition;
-        while(currentPosition.getRow() != 8 && currentPosition.getColumn() != 8) {
-            ChessPosition upRight = new ChessPosition(currentPosition.getRow()+1, currentPosition.getColumn()+1);
+    }
+
+    private void upRight(ChessBoard board, ChessPosition myPosition) {
+        currentPosition = myPosition;
+        while (currentPosition.getRow() != 8 && currentPosition.getColumn() != 8) {
+            ChessPosition upRight = new ChessPosition(currentPosition.getRow() + 1, currentPosition.getColumn() + 1);
             if (board.getPiece(upRight) == null) {
                 move = new ChessMove(myPosition, upRight, null);
                 queenMovesCollection.add(move);
                 currentPosition = upRight;
-            }
-            else if (!isSameColor(board, myPosition, upRight)) {
+            } else if (!isSameColor(board, myPosition, upRight)) {
                 move = new ChessMove(myPosition, upRight, null);
                 queenMovesCollection.add(move);
                 break;
-            }
-            else {
+            } else {
                 break;
             }
         }
+    }
 
-        // left
+    private void left(ChessBoard board, ChessPosition myPosition) {
         currentPosition = myPosition;
         while(currentPosition.getColumn() != 1) {
             ChessPosition left = new ChessPosition(currentPosition.getRow(), currentPosition.getColumn()-1);
@@ -331,7 +359,9 @@ public class ChessPiece {
                 break;
             }
         }
-        // right
+    }
+
+    private void right (ChessBoard board, ChessPosition myPosition) {
         currentPosition = myPosition;
         while(currentPosition.getColumn() !=8) {
             ChessPosition right = new ChessPosition(currentPosition.getRow(), currentPosition.getColumn()+1);
@@ -340,7 +370,7 @@ public class ChessPiece {
                 queenMovesCollection.add(move);
                 currentPosition = right;
             }
-                else if (!isSameColor(board, myPosition, right)) {
+            else if (!isSameColor(board, myPosition, right)) {
                 move = new ChessMove(myPosition, right, null);
                 queenMovesCollection.add(move);
                 break;
@@ -349,7 +379,9 @@ public class ChessPiece {
                 break;
             }
         }
-        // downLeft
+    }
+
+    private void downLeft (ChessBoard board, ChessPosition myPosition) {
         currentPosition = myPosition;
         while (currentPosition.getRow() != 1 && currentPosition.getColumn() != 1) {
             ChessPosition downLeft = new ChessPosition(currentPosition.getRow()-1, currentPosition.getColumn()-1);
@@ -367,7 +399,9 @@ public class ChessPiece {
                 break;
             }
         }
-        // down
+    }
+
+    private void down (ChessBoard board, ChessPosition myPosition) {
         currentPosition = myPosition;
         while (currentPosition.getRow() != 1) {
             ChessPosition down = new ChessPosition(currentPosition.getRow()-1, currentPosition.getColumn());
@@ -385,7 +419,9 @@ public class ChessPiece {
                 break;
             }
         }
-        // downRight
+    }
+
+    private void downRight (ChessBoard board, ChessPosition myPosition) {
         currentPosition = myPosition;
         while (currentPosition.getRow() != 1 && currentPosition.getColumn() != 8) {
             ChessPosition downRight = new ChessPosition(currentPosition.getRow()-1, currentPosition.getColumn()+1);
@@ -403,9 +439,12 @@ public class ChessPiece {
                 break;
             }
         }
-
-        return queenMovesCollection;
     }
+
+
+
+
+
     public Collection<ChessMove> bishopMoves(ChessBoard board, ChessPosition myPosition) {
         bishopMovesCollection = new HashSet<>();
 
