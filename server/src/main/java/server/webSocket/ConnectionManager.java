@@ -89,8 +89,31 @@ public class ConnectionManager {
                         removeList.add(c);
                     }
                 }
+                // Clean up any connections that were left open.
+                for (var c : removeList) {
+                    connections.remove(c.authToken);
+                }
             } catch (IOException e) {
                 System.out.println(e.getMessage());
+        }
+    }
+
+    public void sendResignMessage(ServerMessage errorMessage) {
+        try {
+            var removeList = new ArrayList<Connection>();
+            for (var c : connections.values()) {
+                if (c.session.isOpen()) {
+                    c.send(new Gson().toJson(errorMessage));
+                } else {
+                    removeList.add(c);
+                }
+            }
+            // Clean up any connections that were left open.
+            for (var c : removeList) {
+                connections.remove(c.authToken);
+            }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
         }
     }
     }

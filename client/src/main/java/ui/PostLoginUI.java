@@ -202,7 +202,7 @@ public class PostLoginUI {
                 columnTracker++;
                 ChessPosition position;
                 // white on bottom (how real life chess game starts)
-                if (boardColor.equalsIgnoreCase("white") || boardColor.equalsIgnoreCase("observer")) {
+                if (boardColor == null || boardColor.equalsIgnoreCase("white")) {
                     position = new ChessPosition(7-i+1, 7-j+1);
                 }
                 // black on bottom (how ChessBoard class resets normally)

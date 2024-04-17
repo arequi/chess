@@ -21,11 +21,20 @@ public class ChessGame {
     ChessBoard board;
     ChessBoard clonedBoard;
     ChessPosition kingPosition;
+    private boolean isGameOverResign;
 
     public ChessGame() {
         board = new ChessBoard();
         board.resetBoard();
         this.setTeamTurn(TeamColor.WHITE);
+        this.setGameOverResign(false);
+    }
+
+    public boolean getGameOverResign() {
+        return this.isGameOverResign;
+    }
+    public void setGameOverResign(boolean gameOver) {
+        this.isGameOverResign = gameOver;
     }
 
     /**
@@ -101,9 +110,6 @@ public class ChessGame {
         }
         return true;
     }
-
-
-
 
     /**
      * Gets all valid moves for a piece at the given location
@@ -287,6 +293,7 @@ public class ChessGame {
         }
         return false;
     }
+
 
     /**
      * Sets this game's chessboard with a given board
