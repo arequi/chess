@@ -15,7 +15,9 @@ import webSocketMessages.serverMessages.NotificationMessage;
 import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 
 @WebSocket
@@ -24,7 +26,9 @@ public class WebSocketHandler {
     public final ConnectionManager connections = new ConnectionManager();
     private final GameDAO gameDAO = new SQLGameDAO();
     private final AuthDAO authDAO = new SQLAuthDAO();
-    public static SortedMap<Integer, Integer> gameIDs;
+    public static SortedMap<Integer, Integer> gameIDs = new TreeMap<>();
+    public static ArrayList<String> observerAuths = new ArrayList<>();
+    public static SortedMap<Integer, String > gameGroups = new TreeMap<>();
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws Exception {
@@ -69,6 +73,7 @@ public class WebSocketHandler {
                 return;
             }
             Integer gameID = gameIDs.get(gameNum);
+            gameGroups.put(gameID, authToken);
             GameData gameData = gameDAO.getGame(gameID);
             ChessGame game = gameData.game();
             game.setGameOverResign(false);
@@ -123,6 +128,8 @@ public class WebSocketHandler {
             ChessGame game = gameData.game();
             var serverMessage = new LoadGameMessage(game, null);
             String authToken = conn.authToken;
+            gameGroups.put(gameID, authToken);
+            observerAuths.add(authToken);
             connections.broadcast(authToken, serverMessage);
             if (authDAO.getAuth(authToken) == null) {
                 ErrorMessage errorMessage = new ErrorMessage("error: invalid authToken");
@@ -165,19 +172,23 @@ public class WebSocketHandler {
                 return;
             }
             if (game.getGameOverResign()) {
-                ErrorMessage errorMessage = new ErrorMessage("error: game is over by stalemate");
+                ErrorMessage errorMessage = new ErrorMessage("error: game is over by resign");
                 connections.sendError(authToken, errorMessage);
                 return;
             }
-            if (gameData.whiteUsername().equals(username) && !game.getTeamTurn().equals(ChessGame.TeamColor.WHITE)) {
-                ErrorMessage errorMessage = new ErrorMessage("error: not your turn!");
-                connections.sendError(authToken, errorMessage);
-                return;
+            if (gameData.whiteUsername() != null) {
+                if (gameData.whiteUsername().equals(username) && !game.getTeamTurn().equals(ChessGame.TeamColor.WHITE)) {
+                    ErrorMessage errorMessage = new ErrorMessage("error: not your turn!");
+                    connections.sendError(authToken, errorMessage);
+                    return;
+                }
             }
-            if (gameData.blackUsername().equals(username) && !game.getTeamTurn().equals(ChessGame.TeamColor.BLACK)) {
-                ErrorMessage errorMessage = new ErrorMessage("error: not your turn!");
-                connections.sendError(authToken, errorMessage);
-                return;
+            if (gameData.blackUsername() != null) {
+                if (gameData.blackUsername().equals(username) && !game.getTeamTurn().equals(ChessGame.TeamColor.BLACK)) {
+                    ErrorMessage errorMessage = new ErrorMessage("error: not your turn!");
+                    connections.sendError(authToken, errorMessage);
+                    return;
+                }
             }
             UserData userData = new SQLUserDAO().getUser(username);
             if (gameData.observers().contains(userData)) {
@@ -187,23 +198,20 @@ public class WebSocketHandler {
             }
             ChessPosition startPosition = move.getStartPosition();
             ChessPosition endPosition = move.getEndPosition();
-            if (game.getTeamTurn().equals(ChessGame.TeamColor.WHITE)) {
-                startPosition = new ChessPosition(8 - startPosition.getRow() + 1, 8 - startPosition.getColumn() + 1);
-            }
+            game.makeMove(move);
             String startString = getPositionString(startPosition.getRow(), startPosition.getColumn());
             String endString = getPositionString(endPosition.getRow(), endPosition.getColumn());
-            game.makeMove(move);
             gameDAO.updateGame(gameID, gameData);
             LoadGameMessage loadGameMessage;
-            if (gameData.blackUsername().equalsIgnoreCase(username)) {
+            if (gameData.blackUsername() != null && gameData.blackUsername().equals(username)) {
                 loadGameMessage = new LoadGameMessage(game, "black");
-            } else if (gameData.whiteUsername().equalsIgnoreCase(username)) {
+            } else if (gameData.whiteUsername() != null && gameData.whiteUsername().equals(username)) {
                 loadGameMessage = new LoadGameMessage(game, "white");
             } else {
                 loadGameMessage = new LoadGameMessage(game, null);
             }
-            connections.broadcastMakeMoveLoadGame(loadGameMessage);
-            var serverNotification = new NotificationMessage(username + "moved from " + startString + " to " + endString);
+            connections.broadcastMakeMoveLoadGame(authToken, loadGameMessage);
+            var serverNotification = new NotificationMessage(username + " moved from " + startString + " to " + endString);
             connections.broadcast(authToken, serverNotification);
         } catch (InvalidMoveException e) {
             ErrorMessage errorMessage = new ErrorMessage("error: invalid move");

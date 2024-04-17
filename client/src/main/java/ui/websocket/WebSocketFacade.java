@@ -21,6 +21,7 @@ public class WebSocketFacade extends Endpoint {
 
     Session session;
     NotificationHandler notificationHandler;
+    public static Integer currentGameNum;
 
     public WebSocketFacade(String url, NotificationHandler notificationHandler) throws ResponseException {
         try {

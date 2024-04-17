@@ -235,30 +235,33 @@ public class ChessGame {
      */
     public boolean isInCheckmate(TeamColor teamColor) {
         movesCollection = new HashSet<>();
-            // find position of king whose turn it is currently
-            kingPosition = findKing(board, teamColor);
-            // find all possible moves the king can make
-            ChessPiece kingPiece = new ChessPiece(teamColor, ChessPiece.PieceType.KING);
-            movesCollection = kingPiece.pieceMoves(board, kingPosition);
-            ChessBoard clonedBoardReset = board.chessBoardCopy();
-            clonedBoardReset.resetBoard();
-            if (board.equals(clonedBoardReset)) {
+        // find position of king whose turn it is currently
+        kingPosition = findKing(board, teamColor);
+        // find all possible moves the king can make
+        ChessPiece kingPiece = new ChessPiece(teamColor, ChessPiece.PieceType.KING);
+        movesCollection = kingPiece.pieceMoves(board, kingPosition);
+        ChessBoard clonedBoardReset = board.chessBoardCopy();
+        clonedBoardReset.resetBoard();
+        if (board.equals(clonedBoardReset)) {
+            return false;
+        }
+        Iterator<ChessMove> itr = movesCollection.iterator();
+        ChessMove currentMove;
+        while (itr.hasNext()) {
+            currentMove = itr.next();
+            kingPosition = currentMove.getEndPosition();
+            clonedBoard = board.chessBoardCopy();
+            clonedBoard.addPiece(currentMove.getEndPosition(), kingPiece);
+            clonedBoard.addPiece(currentMove.getStartPosition(), null);
+            // simulate this move by getting all valid moves from each piece.
+            // If any piece's moves land on the king, it's still in checkMate
+            if (!isKingInDanger(clonedBoard, teamColor)) {
                 return false;
             }
-            Iterator<ChessMove> itr = movesCollection.iterator();
-            ChessMove currentMove;
-            while (itr.hasNext()) {
-                currentMove = itr.next();
-                kingPosition = currentMove.getEndPosition();
-                clonedBoard = board.chessBoardCopy();
-                clonedBoard.addPiece(currentMove.getEndPosition(), kingPiece);
-                clonedBoard.addPiece(currentMove.getStartPosition(), null);
-                // simulate this move by getting all valid moves from each piece.
-                // If any piece's moves land on the king, it's still in checkMate
-                if (!isKingInDanger(clonedBoard, teamColor)) {
-                    return false;
-                }
-            }
+        }
+        if (!isKingInDanger(clonedBoard, teamColor)) {
+            return false;
+        }
 
         return true;
     }

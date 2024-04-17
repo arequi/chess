@@ -26,7 +26,6 @@ public class PostLoginUI {
     private WebSocketFacade ws;
     private String serverUrl;
     private NotificationHandler notificationHandler;
-    public static Integer currentGameID;
 
     public PostLoginUI(String serverUrl, NotificationHandler notificationHandler) {
         server = new ServerFacade(serverUrl);
@@ -81,6 +80,7 @@ public class PostLoginUI {
     public String createGame (String gameName) throws ResponseException {
         CreateGameResponse response = server.createGame(gameName);
         if (response.message() == null) {
+            WebSocketFacade.currentGameNum = response.gameID();
             return "Successfully created game";
         }
         if (response.message().equals("Error: unauthorized")) {
@@ -107,6 +107,7 @@ public class PostLoginUI {
         String playerColorString = params[1];
         ChessGame.TeamColor playerColor;
         JoinGameResponse response = server.joinGame(gameNum, playerColorString);
+        WebSocketFacade.currentGameNum = gameNum;
         if (response.message() == null) {
             Repl.state = IN_GAME;
             if (playerColorString.equalsIgnoreCase("white")) {
@@ -134,6 +135,7 @@ public class PostLoginUI {
     public String joinObserver (String... params) throws ResponseException {
         int gameNum = Integer.parseInt(params[0]);
         JoinGameResponse response = server.observeGame(gameNum);
+        WebSocketFacade.currentGameNum = gameNum;
         if (response.message() == null) {
             Repl.state = IN_GAME;
             ws = new WebSocketFacade(serverUrl, notificationHandler);
@@ -158,16 +160,22 @@ public class PostLoginUI {
         System.out.println();
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
-        drawHeaders(out);
+        drawHeaders(out, boardColor);
         drawChessBoard(out, boardColor, currentBoard);
         setBlack(out);
         out.println(EMPTY.repeat(10));
         out.print(SET_BG_COLOR_ORIGINAL);
         out.print(SET_TEXT_COLOR_WHITE);
     }
-    private static void drawHeaders(PrintStream out) {
+    private static void drawHeaders(PrintStream out, String boardColor) {
         setGrey(out);
-        String[] topHeaders = {EMPTY + "h", EMPTY + " g", EMPTY + " f", EMPTY + " e",EMPTY + " d",EMPTY + " c",EMPTY + " b",EMPTY + " a "};
+        String[] topHeaders;
+        if (boardColor.equalsIgnoreCase("black")) {
+            topHeaders = new String[]{EMPTY + "h", EMPTY + " g", EMPTY + " f", EMPTY + " e", EMPTY + " d", EMPTY + " c", EMPTY + " b", EMPTY + " a "};
+        }
+        else {
+            topHeaders = new String[]{EMPTY + "a", EMPTY + " b", EMPTY + " c", EMPTY + " d", EMPTY + " e", EMPTY + " f", EMPTY + " g", EMPTY + " a "};
+        }
         out.print(" " + EMPTY);
          for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
             printHeaderText(out, topHeaders[boardCol]);
@@ -190,7 +198,13 @@ public class PostLoginUI {
         out.println();
     }
     private static void drawSquares(PrintStream out, String boardColor, ChessBoard currentBoard) {
-        String[] sideHeaders = {" 1 ", " 2 ", " 3 ", " 4 ", " 5 " , " 6 " ," 7 "," 8 " };
+        String[] sideHeaders = {};
+        if (boardColor.equalsIgnoreCase("black")) {
+            sideHeaders = new String[]{" 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 "};
+        }
+        else  {
+            sideHeaders = new String[]{" 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 "};
+        }
         rowTracker = 0;
         boolean islightSquare = true;
         for (int i = 0; i < 8; i++) {

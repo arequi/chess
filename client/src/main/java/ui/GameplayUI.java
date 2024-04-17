@@ -7,8 +7,8 @@ import ui.websocket.WebSocketFacade;
 import java.util.Arrays;
 
 import static ui.EscapeSequences.*;
-import static ui.PostLoginUI.currentGameID;
 import static ui.State.LOGGED_IN;
+import static ui.websocket.WebSocketFacade.currentGameNum;
 
 public class GameplayUI {
     private final ServerFacade server;
@@ -75,7 +75,7 @@ public class GameplayUI {
         ChessPosition startPosition = new ChessPosition(startRow, startCol);
         ChessPosition endPosition = new ChessPosition(endRow, endCol);
         ChessPiece.PieceType promotionPiece;
-        if (params[2].equalsIgnoreCase("none")) {
+        if (params.length == 2) {
             promotionPiece = null;
         }
         else {
@@ -83,13 +83,13 @@ public class GameplayUI {
         }
         ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
         WebSocketFacade ws = new WebSocketFacade(serverUrl, notificationHandler);
-        ws.makeMove(PreLoginUI.authToken, currentGameID, move);
+        ws.makeMove(PreLoginUI.authToken, currentGameNum, move);
         return "Successfully made a move";
     }
 
     public String resign () throws ResponseException {
         WebSocketFacade ws = new WebSocketFacade(serverUrl, notificationHandler);
-        ws.resign(PreLoginUI.authToken, currentGameID);
+        ws.resign(PreLoginUI.authToken, currentGameNum);
         Repl.state = State.LOGGED_IN;
         return "Successfully resigned";
     }
@@ -97,7 +97,7 @@ public class GameplayUI {
     public String leave () throws ResponseException {
         Repl.state = LOGGED_IN;
         WebSocketFacade ws = new WebSocketFacade(serverUrl, notificationHandler);
-        ws.leave(PreLoginUI.authToken, currentGameID);
+        ws.leave(PreLoginUI.authToken, currentGameNum);
         return "Successfully Left Game";
     }
 

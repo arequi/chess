@@ -1,13 +1,20 @@
 package server.webSocket;
 
+import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
+import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
+import webSocketMessages.serverMessages.LoadGameMessage;
 import webSocketMessages.serverMessages.ServerMessage;
 
 import java.io.IOException;
 import java.lang.invoke.ConstantBootstraps;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static server.webSocket.WebSocketHandler.gameGroups;
+import static server.webSocket.WebSocketHandler.observerAuths;
 
 public class ConnectionManager {
     public static ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
@@ -59,14 +66,34 @@ public class ConnectionManager {
             }
         }
 
-    public void broadcastMakeMoveLoadGame(ServerMessage serverMessage) throws IOException {
-        if (serverMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.LOAD_GAME)) {
-            for (var c : connections.values()) {
-                if (c.session.isOpen()) {
-                    c.send(new Gson().toJson(serverMessage));
-                } else {
-                    removeList.add(c);
+    public void broadcastMakeMoveLoadGame(String authToken, LoadGameMessage loadGameMessage) throws IOException {
+        String playerColor = loadGameMessage.getPlayerColor();
+        ChessGame game = loadGameMessage.getGame();
+        LoadGameMessage loadGameToMe;
+        LoadGameMessage loadGameToOpponent;
+        LoadGameMessage loadGameToObservers;
+        if (playerColor.equalsIgnoreCase("White")) {
+            loadGameToMe = new LoadGameMessage(game, "white");
+            loadGameToOpponent = new LoadGameMessage(game, "black");
+        }
+        else {
+            loadGameToMe = new LoadGameMessage(game, "black");
+            loadGameToOpponent = new LoadGameMessage(game, "white");
+        }
+        loadGameToObservers = new LoadGameMessage(game, "white");
+        for (var c : connections.values()) {
+            if (c.session.isOpen()) {
+                if (c.authToken.equals(authToken)) {
+                    c.send(new Gson().toJson(loadGameToMe));
                 }
+                else if (observerAuths.contains(c.authToken)) {
+                    c.send(new Gson().toJson(loadGameToObservers));
+                }
+                else {
+                    c.send(new Gson().toJson(loadGameToOpponent));
+                }
+            } else {
+                removeList.add(c);
             }
         }
         // Clean up any connections that were left open.
@@ -77,7 +104,6 @@ public class ConnectionManager {
 
         public void sendError(String authToken, ServerMessage errorMessage) {
             try {
-                var removeList = new ArrayList<Connection>();
                 for (var c : connections.values()) {
                     if (c.session.isOpen()) {
                         if (c.authToken.equals(authToken)) {
@@ -99,7 +125,6 @@ public class ConnectionManager {
 
         public void sendResignMessage(ServerMessage errorMessage) {
             try {
-                var removeList = new ArrayList<Connection>();
                 for (var c : connections.values()) {
                     if (c.session.isOpen()) {
                         c.send(new Gson().toJson(errorMessage));
