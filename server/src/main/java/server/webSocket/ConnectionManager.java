@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
     public static ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
+    public static ArrayList<Connection> removeList = new ArrayList<>();
 
     public void add(String authToken, Session session) {
         var connection = new Connection(authToken, session);
@@ -30,7 +31,6 @@ public class ConnectionManager {
     }
 
     public void broadcast(String excludeAuthToken, ServerMessage serverMessage) throws IOException {
-        var removeList = new ArrayList<Connection>();
         if (serverMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.LOAD_GAME)) {
             for (var c : connections.values()) {
                 if (c.session.isOpen()) {
@@ -60,7 +60,6 @@ public class ConnectionManager {
         }
 
     public void broadcastMakeMoveLoadGame(ServerMessage serverMessage) throws IOException {
-        var removeList = new ArrayList<Connection>();
         if (serverMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.LOAD_GAME)) {
             for (var c : connections.values()) {
                 if (c.session.isOpen()) {
@@ -98,22 +97,22 @@ public class ConnectionManager {
         }
     }
 
-    public void sendResignMessage(ServerMessage errorMessage) {
-        try {
-            var removeList = new ArrayList<Connection>();
-            for (var c : connections.values()) {
-                if (c.session.isOpen()) {
-                    c.send(new Gson().toJson(errorMessage));
-                } else {
-                    removeList.add(c);
+        public void sendResignMessage(ServerMessage errorMessage) {
+            try {
+                var removeList = new ArrayList<Connection>();
+                for (var c : connections.values()) {
+                    if (c.session.isOpen()) {
+                        c.send(new Gson().toJson(errorMessage));
+                    } else {
+                        removeList.add(c);
+                    }
                 }
+                // Clean up any connections that were left open.
+                for (var c : removeList) {
+                    connections.remove(c.authToken);
+                }
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
             }
-            // Clean up any connections that were left open.
-            for (var c : removeList) {
-                connections.remove(c.authToken);
-            }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
         }
-    }
     }

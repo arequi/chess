@@ -222,7 +222,7 @@ public class WebSocketHandler {
         connections.broadcast(authToken, serverMessage);
     }
 
-    public void resignGame(String message, Connection conn) throws IOException, DataAccessException {
+    public void resignGame(String message, Connection conn) throws DataAccessException {
         Resign resign = new Gson().fromJson(message, Resign.class);
         Integer gameNum = resign.getGameID();
         Integer gameID = gameIDs.get(gameNum);
